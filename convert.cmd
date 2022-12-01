@@ -1,0 +1,1 @@
+pyuic6 -o mbta_tracker_gui.py mbta_tracker.ui
