@@ -24,7 +24,9 @@ dict stops = (
 )
 
 "Route" dropdown is populated by "lines" dict
+
 When "Route" selected, "Stops" drowndown is populated by "routes" dict
+
 When "Stops" selected, URL is constructed via "lines" and "stops" keys
 
 MBTA object = 
