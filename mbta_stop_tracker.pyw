@@ -41,6 +41,10 @@ if __name__ == '__main__':
     window = QMainWindow()
     gui = Ui_mbta_tracker_window()
     gui.setupUi(window)
+    
+    display_rides_index = 0
+    gui.display_button.clicked.connect(lambda: )
+    
     #gui.thread = QThread()
     #gui.worker = RideTracker()
     #gui.worker.moveToThread(gui.thread)
