@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1217</width>
-    <height>533</height>
+    <height>529</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -57,7 +57,7 @@
     </font>
    </property>
    <property name="title">
-    <string>Ride 1: </string>
+    <string>Ride 1</string>
    </property>
    <widget class="QPlainTextEdit" name="ride_1_box_1">
     <property name="geometry">
@@ -101,7 +101,7 @@
      <bool>true</bool>
     </property>
     <property name="plainText">
-     <string> 16 minutes</string>
+     <string/>
     </property>
    </widget>
    <widget class="QPlainTextEdit" name="ride_1_box_2">
@@ -146,7 +146,7 @@
      <bool>true</bool>
     </property>
     <property name="plainText">
-     <string> 16 minutes</string>
+     <string/>
     </property>
    </widget>
   </widget>
@@ -169,7 +169,7 @@
     </font>
    </property>
    <property name="title">
-    <string>Ride 2: </string>
+    <string>Ride 2</string>
    </property>
    <widget class="QPlainTextEdit" name="ride_2_box_2">
     <property name="geometry">
@@ -213,7 +213,7 @@
      <bool>true</bool>
     </property>
     <property name="plainText">
-     <string> 16 minutes</string>
+     <string/>
     </property>
    </widget>
    <widget class="QPlainTextEdit" name="ride_2_box_1">
@@ -258,7 +258,7 @@
      <bool>true</bool>
     </property>
     <property name="plainText">
-     <string> 16 minutes</string>
+     <string/>
     </property>
    </widget>
   </widget>
@@ -281,7 +281,7 @@
     </font>
    </property>
    <property name="title">
-    <string>Ride 3: </string>
+    <string>Ride 3</string>
    </property>
    <widget class="QPlainTextEdit" name="ride_3_box_2">
     <property name="geometry">
@@ -325,7 +325,7 @@
      <bool>true</bool>
     </property>
     <property name="plainText">
-     <string> 16 minutes</string>
+     <string/>
     </property>
    </widget>
    <widget class="QPlainTextEdit" name="ride_3_box_1">
@@ -370,7 +370,7 @@
      <bool>true</bool>
     </property>
     <property name="plainText">
-     <string> 16 minutes</string>
+     <string/>
     </property>
    </widget>
   </widget>
