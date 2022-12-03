@@ -5,6 +5,7 @@ import time
 from datetime import datetime, timedelta, timezone
 from math import floor
 from queue import Queue
+from threading import Lock
 from urllib import request
 
 from PyQt6.QtCore import QObject, QThread, pyqtSignal, pyqtSlot
@@ -22,6 +23,7 @@ except FileNotFoundError:
     API = None
     
 rides = Queue(maxsize=3)
+mutex = Lock()
 
 
 class MBTAStop:
@@ -33,9 +35,9 @@ class MBTAStop:
         self.method = method.lower()
         
         if self.method == 'predictions':
-            self.sort = 'departure_time'
-        elif self.method == 'schedules':
             self.sort = 'arrival_time'
+        elif self.method == 'schedules':
+            self.sort = 'departure_time'
             
         if direction == 'Inbound':
             self.direction = '1'
@@ -160,14 +162,18 @@ class RideTracker(QObject):
 
 
 def generate_stop():
-    if rides.qsize() == 3:
-        rides.get()
-    rides.put(MBTAStop(
-            gui.route_box.currentText(),
-            gui.stop_box.currentText(),
-            gui.direction_box.currentText(),
-            gui.method_box.currentText()
-    ))  
+    mutex.acquire()
+    try:
+        if rides.qsize() == 3:
+            rides.get()
+        rides.put(MBTAStop(
+                gui.route_box.currentText(),
+                gui.stop_box.currentText(),
+                gui.direction_box.currentText(),
+                gui.method_box.currentText()
+        ))
+    finally:
+        mutex.release()
 
 
 def populate_stops():
