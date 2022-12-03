@@ -203,7 +203,7 @@ class Ui_mbta_tracker_window(object):
         self.ride_3_box_1.setPlainText("")
         self.ride_3_box_1.setObjectName("ride_3_box_1")
         self.trip_selector = QtWidgets.QGroupBox(mbta_tracker_window)
-        self.trip_selector.setGeometry(QtCore.QRect(30, 110, 1151, 201))
+        self.trip_selector.setGeometry(QtCore.QRect(25, 110, 1151, 201))
         font = QtGui.QFont()
         font.setFamily("Source Serif Pro Black")
         font.setPointSize(16)

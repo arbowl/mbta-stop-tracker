@@ -425,7 +425,7 @@
   <widget class="QGroupBox" name="trip_selector">
    <property name="geometry">
     <rect>
-     <x>30</x>
+     <x>25</x>
      <y>110</y>
      <width>1151</width>
      <height>201</height>
