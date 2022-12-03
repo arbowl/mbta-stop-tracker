@@ -13,7 +13,9 @@ from PyQt6.QtWidgets import QApplication, QMainWindow
 
 from mbta_tracker_gui import Ui_mbta_tracker_window
 
+# Resizes for different sized screens
 os.environ['QT_AUTO_SCREEN_SCALE_FACTOR'] = '1'
+# Loads the API key
 try:
     with open('api_key.env', 'r') as f:
         API_KEY = f.readlines()[0]
@@ -21,12 +23,16 @@ try:
 except FileNotFoundError:
     API_KEY = ''
     API = None
-    
+
+# Creates the queue and the lock to prevent race conditions
 rides = Queue(maxsize=3)
 mutex = Lock()
 
 
 class MBTAStop:
+    """An object which contains the information needed
+    to find the T arrival time for a specific stop
+    """
     def __init__(self, route, stop, direction, method):
         stop_converter = json.load(open('stops.json'))
         self.route = route
@@ -63,6 +69,9 @@ class MBTAStop:
 
 
 class RideTracker(QObject):
+    """The worker thread that pulls data from the MBTA and sends
+    signals to the GUI containing the data to update it with
+    """
     ride_1_sig_1 = pyqtSignal(str)
     ride_1_sig_2 = pyqtSignal(str)
     ride_2_sig_1 = pyqtSignal(str)
@@ -75,6 +84,7 @@ class RideTracker(QObject):
     timer_update = pyqtSignal(int)
     
     def __init__(self):
+        # Establishes the QObject and connects signals
         super().__init__()
         self.ride_1_sig_1.connect(gui.ride_1_box_1.setPlainText)
         self.ride_1_sig_2.connect(gui.ride_1_box_2.setPlainText)
@@ -87,6 +97,7 @@ class RideTracker(QObject):
         self.ride_3_label.connect(gui.ride_3.setTitle)
         self.timer_update.connect(gui.refresh_lcd.display)
         
+        # The order of GUI elements to iterate through
         self.ride_labels = [
                 self.ride_1_label, 
                 self.ride_2_label,
@@ -147,14 +158,13 @@ class RideTracker(QObject):
                                 )
                             else:
                                 self.box_signals[station * 2 + col].emit(' Arriving')
-                            
                 except IndexError:
                     continue
-            
+            # Controls the refresh rate
             if API:
                 lcd_value = 5
             else:
-                lcd_value = 60
+                lcd_value = 30
             while lcd_value > 0:
                 self.timer_update.emit(lcd_value)
                 lcd_value -= 1
@@ -162,6 +172,7 @@ class RideTracker(QObject):
 
 
 def generate_stop():
+    # Creates and enqueues a stop object
     mutex.acquire()
     try:
         if rides.qsize() == 3:
@@ -177,6 +188,8 @@ def generate_stop():
 
 
 def populate_stops():
+    """Generates the dropdown list of stops from the line chosen
+    """
     stop = gui.route_box.currentText()
     stops_url = 'https://api-v3.mbta.com/stops?filter[route]=' + stop
     list_of_stops = []
@@ -189,6 +202,8 @@ def populate_stops():
     
 
 def save_current_ride():
+    """Saves the current stop info for however many GUI elements
+    """
     save_list = []
     for item in range(rides.qsize()):
         save_list.append([
@@ -203,17 +218,22 @@ def save_current_ride():
 
 
 def load_saved_rides():
-    with open('favorites.asc', 'r') as file_to_read:
-        favorites = file_to_read.readlines()
-    for line in favorites:
-        line = ast.literal_eval(line)
-        line[2] = 'Inbound' if line[2] == '1' else 'Outbound'
-        rides.put(MBTAStop(
-                line[0],
-                line[1],
-                line[2],
-                line[3]
-    ))  
+    """Loads rides from a text file and parses
+    """
+    try:
+        with open('favorites.asc', 'r') as file_to_read:
+            favorites = file_to_read.readlines()
+        for line in favorites:
+            line = ast.literal_eval(line)
+            line[2] = 'Inbound' if line[2] == '1' else 'Outbound'
+            rides.put(MBTAStop(
+                    line[0],
+                    line[1],
+                    line[2],
+                    line[3]
+        ))
+    except FileNotFoundError:
+        return
 
 
 if __name__ == '__main__':
@@ -222,9 +242,9 @@ if __name__ == '__main__':
     gui = Ui_mbta_tracker_window()
     gui.setupUi(window)
     
+    # Populates the dropdowns
     route_url = 'https://api-v3.mbta.com/routes'
     list_of_routes = []
-    
     with request.urlopen(route_url) as url:
         routes = json.load(url)
     for route in range(len(routes['data'])):
@@ -234,6 +254,8 @@ if __name__ == '__main__':
     gui.route_box.currentTextChanged.connect(populate_stops)
     gui.direction_box.addItems(['Inbound', 'Outbound'])
     gui.method_box.addItems(['Schedules', 'Predictions'])
+    
+    # Initializes the buttons
     gui.display_button.clicked.connect(generate_stop)
     gui.favorites_button.clicked.connect(save_current_ride)
     gui.restore_button.clicked.connect(load_saved_rides)
