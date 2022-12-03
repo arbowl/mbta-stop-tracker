@@ -159,7 +159,7 @@ class RideTracker(QObject):
                     continue
             # Controls the refresh rate
             if API:
-                lcd_value = 1
+                lcd_value = 5
             else:
                 lcd_value = 30
             while lcd_value > 0:
@@ -222,6 +222,9 @@ def save_current_ride():
 def load_saved_rides():
     """Loads rides from a text file and parses
     """
+    mutex.acquire()
+    for _ in range(rides.qsize()):
+        rides.get()
     try:
         with open('favorites.asc', 'r') as file_to_read:
             favorites = file_to_read.readlines()
@@ -239,7 +242,9 @@ def load_saved_rides():
                         line[3]
                 ))
     except FileNotFoundError:
-        return
+        pass
+    finally:
+        mutex.release()
 
 
 if __name__ == '__main__':
