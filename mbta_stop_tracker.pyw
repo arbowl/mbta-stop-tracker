@@ -28,23 +28,27 @@ except FileNotFoundError:
 rides = Queue(maxsize=3)
 mutex = Lock()
 
+# Translator from readable stops to stop codes
+conversion_dict = {}
+
 
 class MBTAStop:
     """An object which contains the information needed
     to find the T arrival time for a specific stop
     """
-    def __init__(self, route, stop, direction, method, conversion):
-        stop_converter = conversion
+    def __init__(self, route, stop, direction, method):
         self.route = route
         self.name = stop
-        self.stop = stop_converter[stop]
+        self.stop = conversion_dict[stop]
         self.method = method.lower()
         
+        # Scheduled stations use departure time
         if self.method == 'predictions':
             self.sort = 'arrival_time'
         elif self.method == 'schedules':
             self.sort = 'departure_time'
-            
+        
+        # Convert direction name to direction ID
         if direction == 'Inbound':
             self.direction = '1'
         elif direction == 'Outbound':
@@ -65,7 +69,6 @@ class MBTAStop:
                 + '&api_key='
                 + API_KEY
         )
-        
 
 
 class RideTracker(QObject):
@@ -117,6 +120,7 @@ class RideTracker(QObject):
     def run(self):
         while True:
             for station in range(rides.qsize()):
+                # This variable makes the additions more visually pleasing
                 rides_cycle = rides.qsize() - 1
                 ride_name = rides.queue[rides_cycle - station].name
                 self.ride_labels[station].emit(ride_name)
@@ -155,7 +159,7 @@ class RideTracker(QObject):
                     continue
             # Controls the refresh rate
             if API:
-                lcd_value = 5
+                lcd_value = 1
             else:
                 lcd_value = 30
             while lcd_value > 0:
@@ -164,7 +168,7 @@ class RideTracker(QObject):
                 time.sleep(1)
 
 
-def generate_stop(conversion):
+def generate_stop():
     """Creates and enqueues a stop object
     """
     mutex.acquire()
@@ -176,7 +180,6 @@ def generate_stop(conversion):
                 gui.stop_box.currentText(),
                 gui.direction_box.currentText(),
                 gui.method_box.currentText(),
-                conversion
         ))
     finally:
         mutex.release()
@@ -188,7 +191,6 @@ def populate_stops():
     stop = gui.route_box.currentText()
     stops_url = 'https://api-v3.mbta.com/stops?filter[route]=' + stop
     list_of_stops = []
-    conversion_dict = {}
     with request.urlopen(stops_url) as url:
         stops = json.load(url)
     for stop in range(len(stops['data'])):
@@ -198,7 +200,6 @@ def populate_stops():
         conversion_dict[stop_name] = stop_id
     gui.stop_box.clear()
     gui.stop_box.addItems(list_of_stops)
-    return conversion_dict
     
 
 def save_current_ride():
@@ -250,13 +251,13 @@ if __name__ == '__main__':
     for route in range(len(routes['data'])):
         list_of_routes.append(routes['data'][route]['id'])
     gui.route_box.addItems(list_of_routes)
-    conversion_dict = populate_stops()
+    populate_stops()
     gui.route_box.currentTextChanged.connect(populate_stops)
     gui.direction_box.addItems(['Inbound', 'Outbound'])
     gui.method_box.addItems(['Predictions', 'Schedules'])
     
     # Initializes the buttons
-    gui.display_button.clicked.connect(lambda: generate_stop(conversion_dict))
+    gui.display_button.clicked.connect(generate_stop)
     gui.favorites_button.clicked.connect(save_current_ride)
     gui.restore_button.clicked.connect(load_saved_rides)
     
