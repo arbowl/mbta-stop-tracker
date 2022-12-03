@@ -124,21 +124,24 @@ class RideTracker(QObject):
             self.updating_sig.emit('Refreshes in:')
             for station in range(rides.qsize()):
                 # This variable makes the additions more visually pleasing
-                rides_cycle = rides.qsize() - 1
-                ride_name = rides.queue[rides_cycle - station].name
+                mbta_object = rides.queue[rides.qsize() - 1 - station]
+                ride_name = mbta_object.name
                 self.ride_labels[station].emit(ride_name)
-                api_url = rides.queue[rides_cycle - station].generate_url()
+                api_url = mbta_object.generate_url()
                 with request.urlopen(api_url) as url:
                     mbta_info = json.load(url)
+                # Reset so nothing carries over
                 k = 0
+                target_time = None
+                display_time = None
                 try:
                     for col in range(2):
-                        while True:
-                            departure_time = mbta_info['data'][col + k]['attributes']['departure_time']
+                        for _ in range(len(mbta_info['data'])):
+                            target_time = mbta_info['data'][col + k]['attributes'][mbta_object.sort]
                             dt = datetime.now(timezone.utc) - timedelta(hours=5, minutes=0)
                             try:
                                 formatted_time = datetime.fromisoformat(
-                                        departure_time.replace('T', ' ')[:-6]
+                                        target_time.replace('T', ' ')[:-6]
                                         + '+00:00'
                                 )
                             except AttributeError:
@@ -149,15 +152,18 @@ class RideTracker(QObject):
                                 k += 1
                             else:
                                 break
-                        if display_time > 0:
-                            minute = ' minute' if display_time == 1 else ' minutes'
-                            self.box_signals[station * 2 + col].emit(
-                                    ' '
-                                    + str(display_time)
-                                    + minute
-                            )
-                        else:
-                            self.box_signals[station * 2 + col].emit(' Arriving')
+                        try:
+                            if display_time > 0:
+                                minute = ' minute' if display_time == 1 else ' minutes'
+                                self.box_signals[station * 2 + col].emit(
+                                        str(display_time)
+                                        + minute
+                                )
+                            else:
+                                self.box_signals[station * 2 + col].emit('Arriving')
+                        # If no time was discovered, this may be an invalid request
+                        except TypeError:
+                            self.box_signals[station * 2 + col].emit('No data')
                 except IndexError:
                     continue
             # Controls the refresh rate

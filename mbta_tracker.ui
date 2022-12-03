@@ -98,6 +98,7 @@
 	color: #FFC600;
 	border-radius: 2px;
 	padding-top: 6px;
+	padding-left: 15px;
 }</string>
     </property>
     <property name="frameShape">
@@ -146,7 +147,7 @@
      <enum>Qt::LeftToRight</enum>
     </property>
     <property name="styleSheet">
-     <string notr="true">background-color: black; color: #FFC600; border-radius: 2px; padding-top: 6px;</string>
+     <string notr="true">background-color: black; color: #FFC600; border-radius: 2px; padding-top: 6px; padding-left: 15px;</string>
     </property>
     <property name="frameShape">
      <enum>QFrame::VLine</enum>
@@ -226,7 +227,7 @@
      <enum>Qt::LeftToRight</enum>
     </property>
     <property name="styleSheet">
-     <string notr="true">background-color: black; color: #FFC600; border-radius: 2px; padding-top: 6px;</string>
+     <string notr="true">background-color: black; color: #FFC600; border-radius: 2px; padding-top: 6px; padding-left: 15px;</string>
     </property>
     <property name="frameShape">
      <enum>QFrame::VLine</enum>
@@ -271,7 +272,7 @@
      <enum>Qt::LeftToRight</enum>
     </property>
     <property name="styleSheet">
-     <string notr="true">background-color: black; color: #FFC600; border-radius: 2px; padding-top: 6px;</string>
+     <string notr="true">background-color: black; color: #FFC600; border-radius: 2px; padding-top: 6px; padding-left: 15px;</string>
     </property>
     <property name="frameShape">
      <enum>QFrame::VLine</enum>
@@ -351,7 +352,7 @@
      <enum>Qt::LeftToRight</enum>
     </property>
     <property name="styleSheet">
-     <string notr="true">background-color: black; color: #FFC600; border-radius: 2px; padding-top: 6px;</string>
+     <string notr="true">background-color: black; color: #FFC600; border-radius: 2px; padding-top: 6px; padding-left: 15px;</string>
     </property>
     <property name="frameShape">
      <enum>QFrame::VLine</enum>
@@ -396,7 +397,7 @@
      <enum>Qt::LeftToRight</enum>
     </property>
     <property name="styleSheet">
-     <string notr="true">background-color: black; color: #FFC600; border-radius: 2px; padding-top: 6px;</string>
+     <string notr="true">background-color: black; color: #FFC600; border-radius: 2px; padding-top: 6px; padding-left: 15px;</string>
     </property>
     <property name="frameShape">
      <enum>QFrame::VLine</enum>
