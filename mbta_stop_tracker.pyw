@@ -179,11 +179,12 @@ def generate_stop():
             gui.ride_2,
             gui.ride_3
     ]
+    # Let the user know their updates are loading
     if gui.refreshes_in.text() == 'Refreshes in:':
         gui.refreshes_in.setText('Adding stop in:')
     else:
         gui.refreshes_in.setText('Adding stops in:')
-        
+    # Lock the queue so the tracker and update don't fight
     mutex.acquire()
     try:
         if rides.full():
@@ -194,10 +195,13 @@ def generate_stop():
                 gui.direction_box.currentText(),
                 gui.method_box.currentText(),
         ))
-        if rides.full():
-            ride_boxes[0].setTitle('Loading...')
-        else:
-            ride_boxes[rides.qsize() - 1].setTitle('Loading...')
+        # Update the boxes that will load new stations
+        for label in ride_boxes:
+            if label.title() != 'Loading...':
+                label.setTitle('Loading...')
+                break
+            else:
+                continue
     finally:
         mutex.release()
 
