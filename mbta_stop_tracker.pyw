@@ -1,3 +1,4 @@
+import ast
 import json
 import os
 import time
@@ -15,9 +16,10 @@ os.environ['QT_AUTO_SCREEN_SCALE_FACTOR'] = '1'
 try:
     with open('api_key.env', 'r') as f:
         API_KEY = f.readlines()[0]
-        print(API_KEY)
+        API = True
 except FileNotFoundError:
     API_KEY = ''
+    API = None
     
 rides = Queue(maxsize=3)
 
@@ -36,9 +38,9 @@ class MBTAStop:
             self.sort = 'arrival_time'
             
         if direction == 'Inbound':
-            self.direction = '0'
-        elif direction == 'Outbound':
             self.direction = '1'
+        elif direction == 'Outbound':
+            self.direction = '0'
 
     def generate_url(self):
         return (
@@ -84,7 +86,7 @@ class RideTracker(QObject):
         self.timer_update.connect(gui.refresh_lcd.display)
         
         self.ride_labels = [
-                self.ride_1_label,
+                self.ride_1_label, 
                 self.ride_2_label,
                 self.ride_3_label
         ]
@@ -113,7 +115,10 @@ class RideTracker(QObject):
                     for col in range(2):
                         if break_flag:
                             break
-                        status = mbta_info['data'][col]['attributes']['status']
+                        try:
+                            status = mbta_info['data'][col]['attributes']['status']
+                        except KeyError:
+                            status = None
                         while True:
                             departure_time = mbta_info['data'][col + k]['attributes']['departure_time']
                             dt = datetime.now(timezone.utc) - timedelta(hours=5, minutes=0)
@@ -143,8 +148,11 @@ class RideTracker(QObject):
                             
                 except IndexError:
                     continue
-                    
-            lcd_value = 3
+            
+            if API:
+                lcd_value = 5
+            else:
+                lcd_value = 60
             while lcd_value > 0:
                 self.timer_update.emit(lcd_value)
                 lcd_value -= 1
@@ -172,6 +180,34 @@ def populate_stops():
         list_of_stops.append(stops['data'][stop]['attributes']['name'])
     gui.stop_box.clear()
     gui.stop_box.addItems(list_of_stops)
+    
+
+def save_current_ride():
+    save_list = []
+    for item in range(rides.qsize()):
+        save_list.append([
+                rides.queue[item].route,
+                rides.queue[item].name,
+                rides.queue[item].direction,
+                rides.queue[item].method
+        ])
+    with open('favorites.asc', 'w') as file_to_save:
+        for item in save_list:
+            file_to_save.write(str(item) + '\n')
+
+
+def load_saved_rides():
+    with open('favorites.asc', 'r') as file_to_read:
+        favorites = file_to_read.readlines()
+    for line in favorites:
+        line = ast.literal_eval(line)
+        line[2] = 'Inbound' if line[2] == '1' else 'Outbound'
+        rides.put(MBTAStop(
+                line[0],
+                line[1],
+                line[2],
+                line[3]
+    ))  
 
 
 if __name__ == '__main__':
@@ -193,6 +229,8 @@ if __name__ == '__main__':
     gui.direction_box.addItems(['Inbound', 'Outbound'])
     gui.method_box.addItems(['Schedules', 'Predictions'])
     gui.display_button.clicked.connect(generate_stop)
+    gui.favorites_button.clicked.connect(save_current_ride)
+    gui.restore_button.clicked.connect(load_saved_rides)
     
     gui.thread = QThread()
     gui.worker = RideTracker()

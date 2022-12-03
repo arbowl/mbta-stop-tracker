@@ -515,7 +515,7 @@
      <string>background-color: #588577;</string>
     </property>
     <property name="text">
-     <string>Add to Favorites</string>
+     <string>Save Current Rides</string>
     </property>
    </widget>
    <widget class="QPushButton" name="restore_button">
@@ -539,7 +539,7 @@
      <string notr="true">background-color: #588577;</string>
     </property>
     <property name="text">
-     <string>Restore Favorites</string>
+     <string>Load Saved Rides</string>
     </property>
     <property name="flat">
      <bool>false</bool>
