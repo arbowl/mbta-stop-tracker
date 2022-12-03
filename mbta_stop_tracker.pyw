@@ -36,7 +36,7 @@ class MBTAStop:
     """An object which contains the information needed
     to find the T arrival time for a specific stop
     """
-    def __init__(self, route, stop, direction, method):
+    def __init__(self, route, stop, direction, method) -> None:
         self.route = route
         self.name = stop
         self.stop = conversion_dict[stop]
@@ -54,7 +54,7 @@ class MBTAStop:
         elif direction == 'Outbound':
             self.direction = '0'
 
-    def generate_url(self):
+    def generate_url(self) -> str:
         return (
                 'https://api-v3.mbta.com/'
                 + self.method
@@ -87,7 +87,7 @@ class RideTracker(QObject):
     ride_3_label = pyqtSignal(str)
     timer_update = pyqtSignal(int)
     
-    def __init__(self):
+    def __init__(self) -> None:
         # Establishes the QObject and connects signals
         super().__init__()
         self.updating_sig.connect(gui.refreshes_in.setText)
@@ -119,7 +119,7 @@ class RideTracker(QObject):
         ]
     
     @pyqtSlot()
-    def run(self):
+    def run(self) -> None:
         while True:
             self.updating_sig.emit('Refreshes in:')
             for station in range(rides.qsize()):
@@ -171,7 +171,7 @@ class RideTracker(QObject):
                 time.sleep(1)
 
 
-def generate_stop():
+def generate_stop() -> None:
     """Creates and enqueues a stop object
     """
     ride_boxes = [
@@ -206,7 +206,7 @@ def generate_stop():
         mutex.release()
 
 
-def populate_stops():
+def populate_stops() -> None:
     """Generates the dropdown list of stops from the line chosen
     """
     stop = gui.route_box.currentText()
@@ -223,7 +223,7 @@ def populate_stops():
     gui.stop_box.addItems(list_of_stops)
     
 
-def save_current_ride():
+def save_current_ride() -> None:
     """Saves the current stop info for however many GUI elements
     """
     save_list = []
@@ -240,17 +240,26 @@ def save_current_ride():
             file_to_save.write(str(item) + '\n')
 
 
-def load_saved_rides():
+def load_saved_rides() -> None:
     """Loads rides from a text file and parses
     """
+    ride_boxes = [
+            gui.ride_1,
+            gui.ride_2,
+            gui.ride_3
+    ]
+    gui.refreshes_in.setText('Loading saved rides...')
     mutex.acquire()
     for _ in range(rides.qsize()):
         rides.get()
     try:
         with open('favorites.asc', 'r') as file_to_read:
             favorites = file_to_read.readlines()
+        for label in range(len(favorites) - 1):
+            ride_boxes[label].setTitle('Loading...')
         for idx, line in enumerate(favorites):
             if idx == 0:
+                # Need to load globally so all functions can use it
                 global conversion_dict
                 conversion_dict = ast.literal_eval(line)
             else:
