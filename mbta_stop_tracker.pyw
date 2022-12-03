@@ -17,9 +17,10 @@ except FileNotFoundError:
     API_KEY = ''
 
 
-class RideTracker:
+class RideTracker(QObject):
     
     def __init__(self):
+        super().__init__()
         return
     
     @pyqtSlot()
@@ -34,6 +35,18 @@ class MBTAStop:
         self.stop = stop
         self.direction = direction
         self.method = method
+        
+
+def populate_stops():
+    stop = gui.route_box.currentText()
+    stops_url = 'https://api-v3.mbta.com/stops?filter[route]=' + stop
+    list_of_stops = []
+    with request.urlopen(stops_url) as url:
+        stops = json.load(url)
+        for stop in range(len(stops['data'])):
+            list_of_stops.append(stops['data'][stop]['attributes']['name'])
+    gui.stop_box.clear()
+    gui.stop_box.addItems(list_of_stops)
 
 
 if __name__ == '__main__':
@@ -42,13 +55,24 @@ if __name__ == '__main__':
     gui = Ui_mbta_tracker_window()
     gui.setupUi(window)
     
-    display_rides_index = 0
-    gui.display_button.clicked.connect(lambda: )
+    route_url = 'https://api-v3.mbta.com/routes'
+    list_of_routes = []
     
-    #gui.thread = QThread()
-    #gui.worker = RideTracker()
-    #gui.worker.moveToThread(gui.thread)
-    #gui.thread.started.connect(gui.worker.run)
-    #gui.thread.start()
+    with request.urlopen(route_url) as url:
+        routes = json.load(url)
+        for route in range(len(routes['data'])):
+            list_of_routes.append(routes['data'][route]['id'])
+    gui.route_box.addItems(list_of_routes)
+    gui.route_box.currentTextChanged.connect(populate_stops)
+    gui.direction_box.addItems(['Inbound', 'Outbound'])
+    gui.method_box.addItems(['Schedules', 'Predictions'])
+            
+    #gui.route_box.addItems(json.load(open('stops.json')))
+    
+    gui.thread = QThread()
+    gui.worker = RideTracker()
+    gui.worker.moveToThread(gui.thread)
+    gui.thread.started.connect(gui.worker.run)
+    gui.thread.start()
     window.show()
     app.exec()
