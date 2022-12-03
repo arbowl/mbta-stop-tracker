@@ -469,6 +469,9 @@
     <property name="styleSheet">
      <string notr="true">background-color: #FAF9F6; color: black;</string>
     </property>
+    <property name="editable">
+     <bool>false</bool>
+    </property>
     <property name="sizeAdjustPolicy">
      <enum>QComboBox::AdjustToContentsOnFirstShow</enum>
     </property>
@@ -671,9 +674,9 @@
   <widget class="QLabel" name="refreshes_in">
    <property name="geometry">
     <rect>
-     <x>1000</x>
+     <x>890</x>
      <y>40</y>
-     <width>131</width>
+     <width>231</width>
      <height>41</height>
     </rect>
    </property>
@@ -686,8 +689,14 @@
      <bold>true</bold>
     </font>
    </property>
+   <property name="layoutDirection">
+    <enum>Qt::LeftToRight</enum>
+   </property>
    <property name="text">
     <string>Refreshes in:</string>
+   </property>
+   <property name="alignment">
+    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
    </property>
   </widget>
   <zorder>ride_1</zorder>

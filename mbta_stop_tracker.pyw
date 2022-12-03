@@ -75,6 +75,7 @@ class RideTracker(QObject):
     """The worker thread that pulls data from the MBTA and sends
     signals to the GUI containing the data to update it with
     """
+    updating_sig = pyqtSignal(str)
     ride_1_sig_1 = pyqtSignal(str)
     ride_1_sig_2 = pyqtSignal(str)
     ride_2_sig_1 = pyqtSignal(str)
@@ -89,6 +90,7 @@ class RideTracker(QObject):
     def __init__(self):
         # Establishes the QObject and connects signals
         super().__init__()
+        self.updating_sig.connect(gui.refreshes_in.setText)
         self.ride_1_sig_1.connect(gui.ride_1_box_1.setPlainText)
         self.ride_1_sig_2.connect(gui.ride_1_box_2.setPlainText)
         self.ride_2_sig_1.connect(gui.ride_2_box_1.setPlainText)
@@ -119,6 +121,7 @@ class RideTracker(QObject):
     @pyqtSlot()
     def run(self):
         while True:
+            self.updating_sig.emit('Refreshes in:')
             for station in range(rides.qsize()):
                 # This variable makes the additions more visually pleasing
                 rides_cycle = rides.qsize() - 1
@@ -171,6 +174,16 @@ class RideTracker(QObject):
 def generate_stop():
     """Creates and enqueues a stop object
     """
+    ride_boxes = [
+            gui.ride_1,
+            gui.ride_2,
+            gui.ride_3
+    ]
+    if gui.refreshes_in.text() == 'Refreshes in:':
+        gui.refreshes_in.setText('Adding stop in:')
+    else:
+        gui.refreshes_in.setText('Adding stops in:')
+        
     mutex.acquire()
     try:
         if rides.full():
@@ -181,6 +194,10 @@ def generate_stop():
                 gui.direction_box.currentText(),
                 gui.method_box.currentText(),
         ))
+        if rides.full():
+            ride_boxes[0].setTitle('Loading...')
+        else:
+            ride_boxes[rides.qsize() - 1].setTitle('Loading...')
     finally:
         mutex.release()
 
