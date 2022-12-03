@@ -199,7 +199,24 @@ class Ui_mbta_tracker_window(object):
         font = QtGui.QFont()
         font.setPointSize(14)
         self.route_box.setFont(font)
-        self.route_box.setStyleSheet("background-color: #FAF9F6; color: black;")
+        self.route_box.setStyleSheet("#route_box {\n"
+"    background-color: #FAF9F6;\n"
+"    color: black;\n"
+"}\n"
+"\n"
+"#route_box::drop-down {\n"
+"    border: 0px;\n"
+"}\n"
+"\n"
+"#route_box::down-arrow {\n"
+"    width: 12px;\n"
+"    height: 12px;\n"
+"}\n"
+"\n"
+"#route_box::on {\n"
+"    border: 4px solid #C2DBFE;\n"
+"}")
+        self.route_box.setSizeAdjustPolicy(QtWidgets.QComboBox.SizeAdjustPolicy.AdjustToContentsOnFirstShow)
         self.route_box.setObjectName("route_box")
         self.display_button = QtWidgets.QPushButton(self.trip_selector)
         self.display_button.setGeometry(QtCore.QRect(170, 140, 261, 41))

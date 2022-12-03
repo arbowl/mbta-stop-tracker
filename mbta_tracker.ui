@@ -467,7 +467,26 @@
      </font>
     </property>
     <property name="styleSheet">
-     <string notr="true">background-color: #FAF9F6; color: black;</string>
+     <string notr="true">#route_box {
+	background-color: #FAF9F6;
+	color: black;
+}
+
+#route_box::drop-down {
+	border: 0px;
+}
+
+#route_box::down-arrow {
+	width: 12px;
+	height: 12px;
+}
+
+#route_box::on {
+	border: 4px solid #C2DBFE;
+}</string>
+    </property>
+    <property name="sizeAdjustPolicy">
+     <enum>QComboBox::AdjustToContentsOnFirstShow</enum>
     </property>
    </widget>
    <widget class="QPushButton" name="display_button">

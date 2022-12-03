@@ -33,8 +33,8 @@ class MBTAStop:
     """An object which contains the information needed
     to find the T arrival time for a specific stop
     """
-    def __init__(self, route, stop, direction, method):
-        stop_converter = json.load(open('stops.json'))
+    def __init__(self, route, stop, direction, method, conversion):
+        stop_converter = conversion
         self.route = route
         self.name = stop
         self.stop = stop_converter[stop]
@@ -117,21 +117,15 @@ class RideTracker(QObject):
     def run(self):
         while True:
             for station in range(rides.qsize()):
-                ride_name = rides.queue[station].name
+                rides_cycle = rides.qsize() - 1
+                ride_name = rides.queue[rides_cycle - station].name
                 self.ride_labels[station].emit(ride_name)
-                api_url = rides.queue[station].generate_url()
+                api_url = rides.queue[rides_cycle - station].generate_url()
                 with request.urlopen(api_url) as url:
                     mbta_info = json.load(url)
                 k = 0
-                break_flag = None
                 try:
                     for col in range(2):
-                        if break_flag:
-                            break
-                        try:
-                            status = mbta_info['data'][col]['attributes']['status']
-                        except KeyError:
-                            status = None
                         while True:
                             departure_time = mbta_info['data'][col + k]['attributes']['departure_time']
                             dt = datetime.now(timezone.utc) - timedelta(hours=5, minutes=0)
@@ -148,16 +142,15 @@ class RideTracker(QObject):
                                 k += 1
                             else:
                                 break
-                        if not status:
-                            if display_time > 0:
-                                minute = ' minute' if display_time == 1 else ' minutes'
-                                self.box_signals[station * 2 + col].emit(
-                                        ' '
-                                        + str(display_time)
-                                        + minute
-                                )
-                            else:
-                                self.box_signals[station * 2 + col].emit(' Arriving')
+                        if display_time > 0:
+                            minute = ' minute' if display_time == 1 else ' minutes'
+                            self.box_signals[station * 2 + col].emit(
+                                    ' '
+                                    + str(display_time)
+                                    + minute
+                            )
+                        else:
+                            self.box_signals[station * 2 + col].emit(' Arriving')
                 except IndexError:
                     continue
             # Controls the refresh rate
@@ -171,17 +164,19 @@ class RideTracker(QObject):
                 time.sleep(1)
 
 
-def generate_stop():
-    # Creates and enqueues a stop object
+def generate_stop(conversion):
+    """Creates and enqueues a stop object
+    """
     mutex.acquire()
     try:
-        if rides.qsize() == 3:
+        if rides.full():
             rides.get()
         rides.put(MBTAStop(
                 gui.route_box.currentText(),
                 gui.stop_box.currentText(),
                 gui.direction_box.currentText(),
-                gui.method_box.currentText()
+                gui.method_box.currentText(),
+                conversion
         ))
     finally:
         mutex.release()
@@ -193,12 +188,17 @@ def populate_stops():
     stop = gui.route_box.currentText()
     stops_url = 'https://api-v3.mbta.com/stops?filter[route]=' + stop
     list_of_stops = []
+    conversion_dict = {}
     with request.urlopen(stops_url) as url:
         stops = json.load(url)
     for stop in range(len(stops['data'])):
-        list_of_stops.append(stops['data'][stop]['attributes']['name'])
+        stop_name = stops['data'][stop]['attributes']['name']
+        stop_id = stops['data'][stop]['id']
+        list_of_stops.append(stop_name)
+        conversion_dict[stop_name] = stop_id
     gui.stop_box.clear()
     gui.stop_box.addItems(list_of_stops)
+    return conversion_dict
     
 
 def save_current_ride():
@@ -250,13 +250,13 @@ if __name__ == '__main__':
     for route in range(len(routes['data'])):
         list_of_routes.append(routes['data'][route]['id'])
     gui.route_box.addItems(list_of_routes)
-    populate_stops()
+    conversion_dict = populate_stops()
     gui.route_box.currentTextChanged.connect(populate_stops)
     gui.direction_box.addItems(['Inbound', 'Outbound'])
-    gui.method_box.addItems(['Schedules', 'Predictions'])
+    gui.method_box.addItems(['Predictions', 'Schedules'])
     
     # Initializes the buttons
-    gui.display_button.clicked.connect(generate_stop)
+    gui.display_button.clicked.connect(lambda: generate_stop(conversion_dict))
     gui.favorites_button.clicked.connect(save_current_ride)
     gui.restore_button.clicked.connect(load_saved_rides)
     
