@@ -214,6 +214,7 @@ def save_current_ride():
                 rides.queue[item].method
         ])
     with open('favorites.asc', 'w') as file_to_save:
+        file_to_save.write(str(conversion_dict) + '\n')
         for item in save_list:
             file_to_save.write(str(item) + '\n')
 
@@ -224,15 +225,19 @@ def load_saved_rides():
     try:
         with open('favorites.asc', 'r') as file_to_read:
             favorites = file_to_read.readlines()
-        for line in favorites:
-            line = ast.literal_eval(line)
-            line[2] = 'Inbound' if line[2] == '1' else 'Outbound'
-            rides.put(MBTAStop(
-                    line[0],
-                    line[1],
-                    line[2],
-                    line[3]
-        ))
+        for idx, line in enumerate(favorites):
+            if idx == 0:
+                global conversion_dict
+                conversion_dict = ast.literal_eval(line)
+            else:
+                line = ast.literal_eval(line)
+                line[2] = 'Inbound' if line[2] == '1' else 'Outbound'
+                rides.put(MBTAStop(
+                        line[0],
+                        line[1],
+                        line[2],
+                        line[3]
+                ))
     except FileNotFoundError:
         return
 
