@@ -259,9 +259,7 @@ def load_saved_rides() -> None:
             ride_boxes[label].setTitle('Loading...')
         for idx, line in enumerate(favorites):
             if idx == 0:
-                # Need to load globally so all functions can use it
-                global conversion_dict
-                conversion_dict = ast.literal_eval(line)
+                conversion_dict.update(ast.literal_eval(line))
             else:
                 line = ast.literal_eval(line)
                 line[2] = 'Inbound' if line[2] == '1' else 'Outbound'
@@ -282,6 +280,7 @@ if __name__ == '__main__':
     window = QMainWindow()
     gui = Ui_mbta_tracker_window()
     gui.setupUi(window)
+    
     
     # Populates the dropdowns
     route_url = 'https://api-v3.mbta.com/routes'

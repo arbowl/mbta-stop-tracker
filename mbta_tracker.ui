@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1201</width>
-    <height>529</height>
+    <height>517</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -56,6 +56,19 @@
      <bold>true</bold>
     </font>
    </property>
+   <property name="styleSheet">
+    <string notr="true">#ride_1 {
+	border-radius: 8px;
+	border: 1px solid white;
+	margin: 10px;
+}
+
+#ride_1::title {
+	margin-top: -25px;
+	margin-left: 10px;
+	margin-right: 5px;
+}</string>
+   </property>
    <property name="title">
     <string>Ride 1</string>
    </property>
@@ -80,7 +93,12 @@
      <enum>Qt::LeftToRight</enum>
     </property>
     <property name="styleSheet">
-     <string notr="true">background-color: black; color: #FFC600;</string>
+     <string notr="true">#ride_1_box_1 {
+	background-color: black;
+	color: #FFC600;
+	border-radius: 2px;
+	padding-top: 6px;
+}</string>
     </property>
     <property name="frameShape">
      <enum>QFrame::VLine</enum>
@@ -93,6 +111,9 @@
     </property>
     <property name="horizontalScrollBarPolicy">
      <enum>Qt::ScrollBarAlwaysOff</enum>
+    </property>
+    <property name="sizeAdjustPolicy">
+     <enum>QAbstractScrollArea::AdjustIgnored</enum>
     </property>
     <property name="lineWrapMode">
      <enum>QPlainTextEdit::WidgetWidth</enum>
@@ -125,7 +146,7 @@
      <enum>Qt::LeftToRight</enum>
     </property>
     <property name="styleSheet">
-     <string notr="true">background-color: black; color: #FFC600;</string>
+     <string notr="true">background-color: black; color: #FFC600; border-radius: 2px; padding-top: 6px;</string>
     </property>
     <property name="frameShape">
      <enum>QFrame::VLine</enum>
@@ -168,6 +189,19 @@
      <bold>true</bold>
     </font>
    </property>
+   <property name="styleSheet">
+    <string notr="true">#ride_2 {
+	border-radius: 8px;
+	border: 1px solid white;
+	margin: 10px;
+}
+
+#ride_2::title {
+	margin-top: -25px;
+	margin-left: 10px;
+	margin-right: 5px;
+}</string>
+   </property>
    <property name="title">
     <string>Ride 2</string>
    </property>
@@ -192,7 +226,7 @@
      <enum>Qt::LeftToRight</enum>
     </property>
     <property name="styleSheet">
-     <string notr="true">background-color: black; color: #FFC600;</string>
+     <string notr="true">background-color: black; color: #FFC600; border-radius: 2px; padding-top: 6px;</string>
     </property>
     <property name="frameShape">
      <enum>QFrame::VLine</enum>
@@ -237,7 +271,7 @@
      <enum>Qt::LeftToRight</enum>
     </property>
     <property name="styleSheet">
-     <string notr="true">background-color: black; color: #FFC600;</string>
+     <string notr="true">background-color: black; color: #FFC600; border-radius: 2px; padding-top: 6px;</string>
     </property>
     <property name="frameShape">
      <enum>QFrame::VLine</enum>
@@ -280,6 +314,19 @@
      <bold>true</bold>
     </font>
    </property>
+   <property name="styleSheet">
+    <string notr="true">#ride_3 {
+	border-radius: 8px;
+	border: 1px solid white;
+	margin: 10px;
+}
+
+#ride_3::title {
+	margin-top: -25px;
+	margin-left: 10px;
+	margin-right: 5px;
+}</string>
+   </property>
    <property name="title">
     <string>Ride 3</string>
    </property>
@@ -304,7 +351,7 @@
      <enum>Qt::LeftToRight</enum>
     </property>
     <property name="styleSheet">
-     <string notr="true">background-color: black; color: #FFC600;</string>
+     <string notr="true">background-color: black; color: #FFC600; border-radius: 2px; padding-top: 6px;</string>
     </property>
     <property name="frameShape">
      <enum>QFrame::VLine</enum>
@@ -349,7 +396,7 @@
      <enum>Qt::LeftToRight</enum>
     </property>
     <property name="styleSheet">
-     <string notr="true">background-color: black; color: #FFC600;</string>
+     <string notr="true">background-color: black; color: #FFC600; border-radius: 2px; padding-top: 6px;</string>
     </property>
     <property name="frameShape">
      <enum>QFrame::VLine</enum>
@@ -377,9 +424,9 @@
   <widget class="QGroupBox" name="trip_selector">
    <property name="geometry">
     <rect>
-     <x>20</x>
+     <x>30</x>
      <y>110</y>
-     <width>1161</width>
+     <width>1151</width>
      <height>201</height>
     </rect>
    </property>
@@ -392,13 +439,26 @@
      <bold>true</bold>
     </font>
    </property>
+   <property name="styleSheet">
+    <string notr="true">#trip_selector {
+	border-radius: 8px;
+	border: 1px solid white;
+	margin: 5px;
+}
+
+#trip_selector::title {
+	margin-top: -25px;
+	margin-left: 0px;
+	margin-right: 5px;
+}</string>
+   </property>
    <property name="title">
     <string>Trip Selector</string>
    </property>
    <widget class="QComboBox" name="method_box">
     <property name="geometry">
      <rect>
-      <x>890</x>
+      <x>880</x>
       <y>70</y>
       <width>261</width>
       <height>41</height>
@@ -410,7 +470,55 @@
      </font>
     </property>
     <property name="styleSheet">
-     <string notr="true">background-color: #FAF9F6; color: black;</string>
+     <string notr="true">#method_box {
+	background-color: #FAF9F6;
+	color: black;
+	border-radius: 5px;
+}
+
+#method_box:editable {
+	background: #FAF9F6;
+}
+
+#method_box::drop-down {
+	background-color: #003DA5;
+}
+
+QAbstractItemView {
+	background-color: #FAF9F6;
+	color: black;
+}
+
+QScrollBar {
+	width: 10px;
+	background: #FAF9F6;
+	border: 0px solid #FAF9F6;
+	margin: 0px 0px 0px 0px;
+}
+
+QScrollBar::handle {
+	min-height: 0px;
+	border: 0px solid red;
+	border-radius: 4px;
+	background-color: #7C878E;
+}
+
+QScrollBar::add-line {
+	height: 0px;
+	subcontrol-position: bottom;
+	subcontrol-origin: margin;
+}
+
+QScrollBar::sub-line {
+	height: 0px;
+	subcontrol-position: bottom;
+	subcontrol-origin: margin;
+}
+
+QScrollBar::track {
+	width: 2px;
+	background: black;
+}</string>
     </property>
    </widget>
    <widget class="QComboBox" name="stop_box">
@@ -428,13 +536,61 @@
      </font>
     </property>
     <property name="styleSheet">
-     <string notr="true">background-color: #FAF9F6; color: black;</string>
+     <string notr="true">#stop_box {
+	background-color: #FAF9F6;
+	color: black;
+	border-radius: 5px;
+}
+
+#stop_box:editable {
+	background: #FAF9F6;
+}
+
+#stop_box::drop-down {
+	background-color: #DA291C;
+}
+
+QAbstractItemView {
+	background-color: #FAF9F6;
+	color: black;
+}
+
+QScrollBar {
+	width: 10px;
+	background: #FAF9F6;
+	border: 0px solid #FAF9F6;
+	margin: 0px 0px 0px 0px;
+}
+
+QScrollBar::handle {
+	min-height: 0px;
+	border: 0px solid red;
+	border-radius: 4px;
+	background-color: #7C878E;
+}
+
+QScrollBar::add-line {
+	height: 0px;
+	subcontrol-position: bottom;
+	subcontrol-origin: margin;
+}
+
+QScrollBar::sub-line {
+	height: 0px;
+	subcontrol-position: bottom;
+	subcontrol-origin: margin;
+}
+
+QScrollBar::track {
+	width: 2px;
+	background: black;
+}</string>
     </property>
    </widget>
    <widget class="QComboBox" name="direction_box">
     <property name="geometry">
      <rect>
-      <x>600</x>
+      <x>590</x>
       <y>70</y>
       <width>261</width>
       <height>41</height>
@@ -449,7 +605,55 @@
      <bool>false</bool>
     </property>
     <property name="styleSheet">
-     <string notr="true">background-color: #FAF9F6; color: black;</string>
+     <string notr="true">#direction_box {
+	background-color: #FAF9F6;
+	color: black;
+	border-radius: 5px;
+}
+
+#direction_box:editable {
+	background: #FAF9F6;
+}
+
+#direction_box::drop-down {
+	background-color: #ED8B00;
+}
+
+QAbstractItemView {
+	background-color: #FAF9F6;
+	color: black;
+}
+
+QScrollBar {
+	width: 10px;
+	background: #FAF9F6;
+	border: 0px solid #FAF9F6;
+	margin: 0px 0px 0px 0px;
+}
+
+QScrollBar::handle {
+	min-height: 0px;
+	border: 0px solid red;
+	border-radius: 4px;
+	background-color: #7C878E;
+}
+
+QScrollBar::add-line {
+	height: 0px;
+	subcontrol-position: bottom;
+	subcontrol-origin: margin;
+}
+
+QScrollBar::sub-line {
+	height: 0px;
+	subcontrol-position: bottom;
+	subcontrol-origin: margin;
+}
+
+QScrollBar::track {
+	width: 2px;
+	background: black;
+}</string>
     </property>
    </widget>
    <widget class="QComboBox" name="route_box">
@@ -467,7 +671,55 @@
      </font>
     </property>
     <property name="styleSheet">
-     <string notr="true">background-color: #FAF9F6; color: black;</string>
+     <string notr="true">#route_box {
+	background-color: #FAF9F6;
+	color: black;
+	border-radius: 5px;
+}
+
+#route_box:editable {
+	background: #FAF9F6;
+}
+
+#route_box::drop-down {
+	background-color: #00843D;
+}
+
+QAbstractItemView {
+	background-color: #FAF9F6;
+	color: black;
+}
+
+QScrollBar {
+	width: 10px;
+	background: #FAF9F6;
+	border: 0px solid #FAF9F6;
+	margin: 0px 0px 0px 0px;
+}
+
+QScrollBar::handle {
+	min-height: 0px;
+	border: 0px solid red;
+	border-radius: 4px;
+	background-color: #7C878E;
+}
+
+QScrollBar::add-line {
+	height: 0px;
+	subcontrol-position: bottom;
+	subcontrol-origin: margin;
+}
+
+QScrollBar::sub-line {
+	height: 0px;
+	subcontrol-position: bottom;
+	subcontrol-origin: margin;
+}
+
+QScrollBar::track {
+	width: 2px;
+	background: black;
+}</string>
     </property>
     <property name="editable">
      <bool>false</bool>
@@ -493,8 +745,21 @@
       <bold>true</bold>
      </font>
     </property>
+    <property name="autoFillBackground">
+     <bool>false</bool>
+    </property>
     <property name="styleSheet">
-     <string>background-color: #588577;</string>
+     <string notr="true">#display_button {
+	background-color: #699688;
+	border-radius: 5px;
+	border-color: #366355;
+	border-width: 1px;
+	border-style: outset;
+}
+
+#display_button:pressed {
+	background-color: #678777;
+}</string>
     </property>
     <property name="text">
      <string>Display Rides</string>
@@ -518,7 +783,17 @@
      </font>
     </property>
     <property name="styleSheet">
-     <string>background-color: #588577;</string>
+     <string notr="true">#favorites_button {
+	background-color: #699688;
+	border-radius: 5px;
+	border-color: #366355;
+	border-width: 1px;
+	border-style: outset;
+}
+
+#favorites_button:pressed {
+	background-color: #678777;
+}</string>
     </property>
     <property name="text">
      <string>Save Current Rides</string>
@@ -542,7 +817,17 @@
      </font>
     </property>
     <property name="styleSheet">
-     <string notr="true">background-color: #588577;</string>
+     <string notr="true">#restore_button {
+	background-color: #699688;
+	border-radius: 5px;
+	border-color: #366355;
+	border-width: 1px;
+	border-style: outset;
+}
+
+#restore_button:pressed {
+	background-color: #678777;
+}</string>
     </property>
     <property name="text">
      <string>Load Saved Rides</string>
@@ -554,10 +839,10 @@
    <widget class="QLabel" name="route_label">
     <property name="geometry">
      <rect>
-      <x>20</x>
-      <y>42</y>
+      <x>10</x>
+      <y>40</y>
       <width>81</width>
-      <height>21</height>
+      <height>31</height>
      </rect>
     </property>
     <property name="font">
@@ -575,7 +860,7 @@
    <widget class="QLabel" name="stop_label">
     <property name="geometry">
      <rect>
-      <x>310</x>
+      <x>300</x>
       <y>40</y>
       <width>71</width>
       <height>31</height>
@@ -596,10 +881,10 @@
    <widget class="QLabel" name="direction_label">
     <property name="geometry">
      <rect>
-      <x>610</x>
-      <y>32</y>
+      <x>590</x>
+      <y>30</y>
       <width>101</width>
-      <height>41</height>
+      <height>51</height>
      </rect>
     </property>
     <property name="font">
@@ -617,7 +902,7 @@
    <widget class="QLabel" name="method_label">
     <property name="geometry">
      <rect>
-      <x>900</x>
+      <x>880</x>
       <y>40</y>
       <width>141</width>
       <height>31</height>
@@ -638,7 +923,7 @@
    <widget class="QLabel" name="label">
     <property name="geometry">
      <rect>
-      <x>890</x>
+      <x>880</x>
       <y>110</y>
       <width>261</width>
       <height>31</height>
@@ -676,7 +961,7 @@
   <widget class="QLCDNumber" name="refresh_lcd">
    <property name="geometry">
     <rect>
-     <x>1130</x>
+     <x>1120</x>
      <y>40</y>
      <width>51</width>
      <height>41</height>
@@ -688,7 +973,12 @@
     </font>
    </property>
    <property name="styleSheet">
-    <string notr="true">background-color: black; color: #BD3039;; border-color: black;</string>
+    <string notr="true">#refresh_lcd {
+	background-color: black;
+	color: #BD3039;
+	border-color: black;
+	border-radius: 3px;
+}</string>
    </property>
    <property name="digitCount">
     <number>2</number>
@@ -700,7 +990,7 @@
   <widget class="QLabel" name="refreshes_in">
    <property name="geometry">
     <rect>
-     <x>890</x>
+     <x>880</x>
      <y>40</y>
      <width>231</width>
      <height>41</height>
