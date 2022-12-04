@@ -28,7 +28,7 @@ except FileNotFoundError:
 rides = Queue(maxsize=3)
 mutex = Lock()
 
-# Translator from readable stops to stop codes
+# Dictionary to translate human-readable stops to MBTA API codes
 conversion_dict = {}
 
 
@@ -55,6 +55,11 @@ class MBTAStop:
             self.direction = '0'
 
     def generate_url(self) -> str:
+        """Creates and returns a URL based on the object's properties
+
+        Returns:
+            str: base url + parameters of the trip + api key
+        """
         return (
                 'https://api-v3.mbta.com/'
                 + self.method
@@ -120,6 +125,11 @@ class RideTracker(QObject):
     
     @pyqtSlot()
     def run(self) -> None:
+        """The main logical loop of the program. Each refresh cycle, it iterates
+        through the queue and downloads the data associated with each MBTA object
+        and the URL associated with it. Different exceptions indicate different
+        errors with the URL requested.
+        """
         while True:
             self.updating_sig.emit('Refreshes in:')
             for station in range(rides.qsize()):
@@ -135,7 +145,9 @@ class RideTracker(QObject):
                 target_time = None
                 display_time = None
                 try:
+                    # For each of the two info boxes per stop
                     for col in range(2):
+                        # For all values in 'data' (needed if we're looking at a day's schedule)
                         for _ in range(len(mbta_info['data'])):
                             target_time = mbta_info['data'][col + k]['attributes'][mbta_object.sort]
                             dt = datetime.now(timezone.utc) - timedelta(hours=5, minutes=0)
@@ -145,9 +157,11 @@ class RideTracker(QObject):
                                         + '+00:00'
                                 )
                             except AttributeError:
+                                # If there's no string then jump to the next attempt
                                 continue
                             formatted_time -= dt
                             display_time = floor(formatted_time.total_seconds() / 60)
+                            # If the user requested a schedule, find the most current data
                             if display_time < 0:
                                 k += 1
                             else:
@@ -161,11 +175,13 @@ class RideTracker(QObject):
                                 )
                             else:
                                 self.box_signals[station * 2 + col].emit('Arriving')
-                        # If no time was discovered, this may be an invalid request
+                        # If this stop doesn't have arrival data, it's probably a terminus
                         except TypeError:
                             self.box_signals[station * 2 + col].emit('No data')
+                # If there isn't a train arriving, skip
                 except IndexError:
                     continue
+                
             # Controls the refresh rate
             if API:
                 lcd_value = 5
@@ -275,8 +291,9 @@ def load_saved_rides() -> None:
                         line[2],
                         line[3]
                 ))
+    # Stops users from breaking my program with invalid requests
     except FileNotFoundError:
-        pass
+        return
     finally:
         mutex.release()
 
@@ -286,7 +303,6 @@ if __name__ == '__main__':
     window = QMainWindow()
     gui = Ui_mbta_tracker_window()
     gui.setupUi(window)
-    
     
     # Populates the dropdowns
     route_url = 'https://api-v3.mbta.com/routes'
@@ -306,10 +322,13 @@ if __name__ == '__main__':
     gui.favorites_button.clicked.connect(save_current_ride)
     gui.restore_button.clicked.connect(load_saved_rides)
     
+    # Starts the logical thread
     gui.thread = QThread()
     gui.worker = RideTracker()
     gui.worker.moveToThread(gui.thread)
     gui.thread.started.connect(gui.worker.run)
     gui.thread.start()
+    
+   # Launches the window
     window.show()
     app.exec()
