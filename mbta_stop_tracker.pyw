@@ -9,6 +9,7 @@ from urllib import request
 
 from PyQt6.QtCore import QObject, QThread, pyqtSignal, pyqtSlot
 from PyQt6.QtWidgets import QApplication, QMainWindow
+from PyQt6.QtGui import QIcon
 
 from mbta_tracker_gui import Ui_mbta_tracker_window
 
@@ -295,6 +296,8 @@ if __name__ == '__main__':
     window = QMainWindow()
     gui = Ui_mbta_tracker_window()
     gui.setupUi(window)
+    app.setWindowIcon(QIcon('icon.ico'))
+    window.setWindowIcon(QIcon('icon.ico'))
     
     # Populates the dropdowns
     route_url = 'https://api-v3.mbta.com/routes'
