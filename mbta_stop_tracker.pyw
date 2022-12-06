@@ -5,11 +5,11 @@ import time
 from datetime import datetime, timedelta, timezone
 from math import floor
 from queue import Queue
-from threading import Lock
 from urllib import request
 
 from PyQt6.QtCore import QObject, QThread, pyqtSignal, pyqtSlot
 from PyQt6.QtWidgets import QApplication, QMainWindow
+from PyQt6.QtGui import QIcon
 
 from mbta_tracker_gui import Ui_mbta_tracker_window
 
@@ -20,16 +20,22 @@ try:
     with open('api_key.env', 'r') as f:
         API_KEY = f.readlines()[0]
         API = True
-except FileNotFoundError:
+except:
     API_KEY = ''
     API = None
 
 # Creates the queue and the lock to prevent race conditions
 rides = Queue(maxsize=3)
-mutex = Lock()
 
 # Dictionary to translate human-readable stops to MBTA API codes
 conversion_dict = {}
+# Two-way direction name vs. direction value dictionary
+direction_dict = {
+        '0' : 'Outbound',
+        '1' : 'Inbound',
+        'Outbound' : '0',
+        'Inbound' : '1'
+}
 
 
 class MBTAStop:
@@ -40,6 +46,7 @@ class MBTAStop:
         self.route = route
         self.name = stop
         self.stop = conversion_dict[stop]
+        self.direction = direction_dict[direction]
         self.method = method.lower()
         
         # Scheduled stations use departure time
@@ -47,12 +54,6 @@ class MBTAStop:
             self.sort = 'arrival_time'
         elif self.method == 'schedules':
             self.sort = 'departure_time'
-        
-        # Convert direction name to direction ID
-        if direction == 'Inbound':
-            self.direction = '1'
-        elif direction == 'Outbound':
-            self.direction = '0'
 
     def generate_url(self) -> str:
         """Creates and returns a URL based on the object's properties
@@ -113,7 +114,6 @@ class RideTracker(QObject):
                 self.ride_2_label,
                 self.ride_3_label
         ]
-        
         self.box_signals = [
                 self.ride_1_sig_1,
                 self.ride_1_sig_2,
@@ -149,6 +149,10 @@ class RideTracker(QObject):
                     for col in range(2):
                         # For all values in 'data' (needed if we're looking at a day's schedule)
                         for _ in range(len(mbta_info['data'])):
+                            # If a stop is "skipped" (bus routes) then it won't count for arrival time
+                            if mbta_info['data'][col + k]['attributes']['schedule_relationship'] == 'SKIPPED':
+                                k += 1
+                                continue
                             target_time = mbta_info['data'][col + k]['attributes'][mbta_object.sort]
                             dt = datetime.now(timezone.utc) - timedelta(hours=5, minutes=0)
                             try:
@@ -156,14 +160,16 @@ class RideTracker(QObject):
                                         target_time.replace('T', ' ')[:-6]
                                         + '+00:00'
                                 )
+                            # If there's no string then jump to the next attempt
                             except AttributeError:
-                                # If there's no string then jump to the next attempt
                                 continue
                             formatted_time -= dt
                             display_time = floor(formatted_time.total_seconds() / 60)
                             # If the user requested a schedule, find the most current data
                             if display_time < 0:
                                 k += 1
+                                continue
+                            # If this is a working time, progress
                             else:
                                 break
                         try:
@@ -207,25 +213,21 @@ def generate_stop() -> None:
     else:
         gui.refreshes_in.setText('Adding stops in:')
     # Lock the queue so the tracker and update don't fight
-    mutex.acquire()
-    try:
-        if rides.full():
-            rides.get()
-        rides.put(MBTAStop(
-                gui.route_box.currentText(),
-                gui.stop_box.currentText(),
-                gui.direction_box.currentText(),
-                gui.method_box.currentText(),
-        ))
-        # Update the boxes that will load new stations
-        for label in ride_boxes:
-            if label.title() != 'Loading...':
-                label.setTitle('Loading...')
-                break
-            else:
-                continue
-    finally:
-        mutex.release()
+    if rides.full():
+        rides.get()
+    rides.put(MBTAStop(
+            gui.route_box.currentText(),
+            gui.stop_box.currentText(),
+            gui.direction_box.currentText(),
+            gui.method_box.currentText(),
+    ))
+    # Update the boxes that will load new stations
+    for label in ride_boxes:
+        if label.title() != 'Loading...':
+            label.setTitle('Loading...')
+            break
+        else:
+            continue
 
 
 def populate_stops() -> None:
@@ -271,7 +273,6 @@ def load_saved_rides() -> None:
             gui.ride_3
     ]
     gui.refreshes_in.setText('Loading saved rides...')
-    mutex.acquire()
     for _ in range(rides.qsize()):
         rides.get()
     try:
@@ -284,7 +285,7 @@ def load_saved_rides() -> None:
                 conversion_dict.update(ast.literal_eval(line))
             else:
                 line = ast.literal_eval(line)
-                line[2] = 'Inbound' if line[2] == '1' else 'Outbound'
+                line[2] = direction_dict[line[2]]
                 rides.put(MBTAStop(
                         line[0],
                         line[1],
@@ -294,8 +295,6 @@ def load_saved_rides() -> None:
     # Stops users from breaking my program with invalid requests
     except FileNotFoundError:
         return
-    finally:
-        mutex.release()
 
 
 if __name__ == '__main__':
@@ -303,6 +302,8 @@ if __name__ == '__main__':
     window = QMainWindow()
     gui = Ui_mbta_tracker_window()
     gui.setupUi(window)
+    app.setWindowIcon(QIcon('icon.ico'))
+    window.setWindowIcon(QIcon('icon.ico'))
     
     # Populates the dropdowns
     route_url = 'https://api-v3.mbta.com/routes'
