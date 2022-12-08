@@ -184,21 +184,31 @@ class RideTracker(QObject):
                             else:
                                 break
 
-                    # Logic to determine what to display for each box under each ride
+                    """Populates ride display boxes
+                    """
+                    # If there is a valid time...
                     if display_time:
+                        # ...And it's greater than 0...
                         if display_time > 0:
-                            minute = ' minute' if display_time == 1 else ' minutes'
-                            self.box_signals[station * 2 + col].emit(
-                                    str(display_time)
-                                    + minute
-                            )
+                            # ...And it's not stopped...
+                            if not status and not previous_status:
+                                minute = ' minute' if display_time == 1 else ' minutes'
+                                self.box_signals[station * 2 + col].emit(
+                                        str(display_time)
+                                        + minute
+                                )
+                            # ...But it's stopped, display it
+                            else:
+                                self.box_signals[station * 2].emit('Stopped')
+                        # ...But it's <=0, the train is ambiguously arriving/departing
                         else:
                             self.box_signals[station * 2 + col].emit('Arriving')
-                        if status or previous_status:
-                            self.box_signals[station * 2].emit('Stopped')
+                    # If there isn't a valid time...
                     else:
+                        # ...And not a single ride is scheduled,
                         if num_of_rides == 0:
                             self.box_signals[station * 2 + col].emit('No data')
+                        # ...But the line is active, stay blank for now
                         else:
                             self.box_signals[station * 2 + col].emit('')
                     previous_status = status
