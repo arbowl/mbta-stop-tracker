@@ -81,6 +81,7 @@ class RideTracker(QObject):
     """The worker thread that pulls data from the MBTA and sends
     signals to the GUI containing the data to update it with
     """
+    timer_update = pyqtSignal(int)
     updating_sig = pyqtSignal(str)
     ride_1_sig_1 = pyqtSignal(str)
     ride_1_sig_2 = pyqtSignal(str)
@@ -91,11 +92,11 @@ class RideTracker(QObject):
     ride_1_label = pyqtSignal(str)
     ride_2_label = pyqtSignal(str)
     ride_3_label = pyqtSignal(str)
-    timer_update = pyqtSignal(int)
     
     def __init__(self) -> None:
         # Establishes the QObject and connects signals
         super().__init__()
+        self.timer_update.connect(gui.refresh_lcd.display)
         self.updating_sig.connect(gui.refreshes_in.setText)
         self.ride_1_sig_1.connect(gui.ride_1_box_1.setPlainText)
         self.ride_1_sig_2.connect(gui.ride_1_box_2.setPlainText)
@@ -106,7 +107,6 @@ class RideTracker(QObject):
         self.ride_1_label.connect(gui.ride_1.setTitle)
         self.ride_2_label.connect(gui.ride_2.setTitle)
         self.ride_3_label.connect(gui.ride_3.setTitle)
-        self.timer_update.connect(gui.refresh_lcd.display)
         
         # The order of GUI elements to iterate through
         self.ride_labels = [
@@ -133,66 +133,81 @@ class RideTracker(QObject):
         while True:
             self.updating_sig.emit('Refreshes in:')
             for station in range(rides.qsize()):
-                # This variable makes the additions more visually pleasing
+                # Sets up MBTA object parsing
                 mbta_object = rides.queue[rides.qsize() - 1 - station]
                 ride_name = mbta_object.name
                 self.ride_labels[station].emit(ride_name)
                 api_url = mbta_object.generate_url()
-                with request.urlopen(api_url) as url:
-                    mbta_info = json.load(url)
-                # Reset so nothing carries over
-                k = 0
+
+                # Gets data ready for processing
+                mbta_info = json.load(request.urlopen(api_url))['data']
+                num_of_rides = len(mbta_info)
+                previous_status = None
                 target_time = None
                 display_time = None
-                try:
-                    # For each of the two info boxes per stop
-                    for col in range(2):
-                        # For all values in 'data' (needed if we're looking at a day's schedule)
-                        for _ in range(len(mbta_info['data'])):
-                            # If a stop is "skipped" (bus routes) then it won't count for arrival time
-                            if mbta_info['data'][col + k]['attributes']['schedule_relationship'] == 'SKIPPED':
-                                k += 1
-                                continue
-                            target_time = mbta_info['data'][col + k]['attributes'][mbta_object.sort]
-                            dt = datetime.now(timezone.utc) - timedelta(hours=5, minutes=0)
-                            try:
+                status = None
+                # Updates each box if there is data
+                for col in range(2):
+                    # Length is set by size of data available
+                    if num_of_rides >= col + 1:
+                        for idx in range(num_of_rides):
+                            # Checks stopped rides
+                            if 'status' in mbta_info[col]['attributes']:
+                                if mbta_info[col]['attributes']['status']:
+                                    status = mbta_info[col]['attributes']['status']
+
+                            # Skips rides that aren't stopping at this stop
+                            if 'schedule_relationship' in mbta_info[col + idx]['attributes']:
+                                if mbta_info[col + idx]['attributes']['schedule_relationship'] == 'SKIPPED':
+                                    continue
+                            
+                            # Checks to see if there is a next available time for that stop
+                            target_time = mbta_info[col + idx]['attributes'][mbta_object.sort]
+                            if target_time:
                                 formatted_time = datetime.fromisoformat(
                                         target_time.replace('T', ' ')[:-6]
                                         + '+00:00'
                                 )
-                            # If there's no string then jump to the next attempt
-                            except AttributeError:
-                                continue
-                            formatted_time -= dt
-                            display_time = floor(formatted_time.total_seconds() / 60)
-                            # If the user requested a schedule, find the most current data
-                            if display_time < 0:
-                                k += 1
-                                continue
-                            # If this is a working time, progress
                             else:
                                 break
-                        try:
-                            if display_time > 0:
-                                minute = ' minute' if display_time == 1 else ' minutes'
-                                self.box_signals[station * 2 + col].emit(
-                                        str(display_time)
-                                        + minute
-                                )
+
+                            # If a time is returned, convert it to minutes from now
+                            formatted_time -= (
+                                    datetime.now(timezone.utc)
+                                    - timedelta(hours=5, minutes=0)
+                            )
+                            display_time = floor(formatted_time.total_seconds() / 60)
+
+                            # If the converted time isn't current, skip to the next one
+                            if display_time < 0:
+                                continue
                             else:
-                                self.box_signals[station * 2 + col].emit('Arriving')
-                        # If this stop doesn't have arrival data, it's probably a terminus
-                        except TypeError:
+                                break
+
+                    # Logic to determine what to display for each box under each ride
+                    if display_time:
+                        if display_time > 0:
+                            minute = ' minute' if display_time == 1 else ' minutes'
+                            self.box_signals[station * 2 + col].emit(
+                                    str(display_time)
+                                    + minute
+                            )
+                        else:
+                            self.box_signals[station * 2 + col].emit('Arriving')
+                        if status or previous_status:
+                            self.box_signals[station * 2].emit('Stopped')
+                    else:
+                        if num_of_rides == 0:
                             self.box_signals[station * 2 + col].emit('No data')
-                # If there isn't a train arriving, skip
-                except IndexError:
-                    continue
-                
-            # Controls the refresh rate
+                        else:
+                            self.box_signals[station * 2 + col].emit('')
+                    previous_status = status
+            
+            # Refresh rate based on presence of API key
             if API:
-                lcd_value = 5
+                lcd_value = 3
             else:
-                lcd_value = 30
+                lcd_value = 15
             while lcd_value > 0:
                 self.timer_update.emit(lcd_value)
                 lcd_value -= 1
