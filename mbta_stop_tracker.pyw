@@ -3,26 +3,25 @@ import json
 import os
 import time
 from datetime import datetime, timedelta, timezone
-from math import floor, ceil
+from math import ceil
 from queue import Queue
 from urllib import request
 
 from PyQt6.QtCore import QObject, QThread, pyqtSignal, pyqtSlot
-from PyQt6.QtWidgets import QApplication, QMainWindow
 from PyQt6.QtGui import QIcon
+from PyQt6.QtWidgets import QApplication, QMainWindow
 
 from mbta_tracker_gui import Ui_mbta_tracker_window
 
 # Resizes for different sized screens
 os.environ['QT_AUTO_SCREEN_SCALE_FACTOR'] = '1'
 # Loads the API key
-try:
+API_KEY = ''
+API = None
+if os.path.exists('api_key.env'):
     with open('api_key.env', 'r') as f:
         API_KEY = f.readlines()[0]
         API = True
-except:
-    API_KEY = ''
-    API = None
 
 # Creates the queue and the lock to prevent race conditions
 rides = Queue(maxsize=3)
@@ -133,12 +132,11 @@ class RideTracker(QObject):
             # For each stop (up to 3) in the queue
             for stop in range(rides.qsize()):
                 mbta_object = rides.queue[rides.qsize() - 1 - stop]
-                ride_name = mbta_object.name
-                self.ride_labels[stop].emit(ride_name)
+                self.ride_labels[stop].emit(mbta_object.name)
                 api_url = mbta_object.generate_url()
                 mbta_info = json.load(request.urlopen(api_url))['data']
-                offset = 0
                 # For each of the two boxes per stop
+                offset = 0
                 for row in range(2):
                     time_to_arrive, offset = self.calculate_stop_times(
                             row,
@@ -151,74 +149,76 @@ class RideTracker(QObject):
                 lcd_value = 3
             else:
                 lcd_value = 15
-            while lcd_value > 0:
+            while lcd_value > -1:
                 self.timer_update.emit(lcd_value)
                 lcd_value -= 1
                 time.sleep(1)
-    
-    def calculate_stop_times(self, row, ride_info, stop_info, offset) -> str:
-        """Handles everything related to finding the next availale ride info
-        based on whether it's the first or second ride available, whether
-        it's stopped or skipped, arriving, or already passed.
-        """
-        status = None
-        display_time = None
-        num_of_rides = len(ride_info)
-        last_ride_index = 0
 
-        # For all the rides available, try to find info for the next nearest
-        if num_of_rides >= row + 1:
-            for idx in range(offset, num_of_rides):
-                if 'status' in ride_info[row]['attributes']:
-                    if ride_info[row]['attributes']['status']:
-                        status = ride_info[row]['attributes']['status']
-                if 'schedule_relationship' in ride_info[row]['attributes']:
-                    if ride_info[row]['attributes']['schedule_relationship'] == 'SKIPPED':
-                        continue
-                target_time = ride_info[row + idx]['attributes'][stop_info.sort]
-                if target_time:
-                    display_time = self.format_time(target_time)
-                    last_ride_index = idx
-                else:
-                    break
-                if display_time < 0:
+
+def calculate_stop_times(row, ride_info, stop_info, offset) -> str:
+    """Handles everything related to finding the next availale ride info
+    based on whether it's the first or second ride available, whether
+    it's stopped or skipped, arriving, or already passed.
+    """
+    status = None
+    display_time = None
+    num_of_rides = len(ride_info)
+    last_ride_index = 0
+
+    # For all the rides available, try to find info for the next nearest
+    if num_of_rides >= row + 1:
+        for idx in range(offset, num_of_rides):
+            if 'status' in ride_info[row]['attributes']:
+                if ride_info[row]['attributes']['status']:
+                    status = ride_info[row]['attributes']['status']
+            if 'schedule_relationship' in ride_info[row]['attributes']:
+                if ride_info[row]['attributes']['schedule_relationship'] == 'SKIPPED':
                     continue
-                else:
-                    if display_time > 20:
-                        display_time = ceil(display_time / 60)
-                    else:
-                        display_time = 0
-                    break
-
-        # Time and offset data to pass off based on status of each ride
-        if display_time is not None:
-            if display_time > 0:
-                if not status:
-                    minute = ' minute' if display_time == 1 else ' minutes'
-                    return str(display_time) + minute, last_ride_index
-                else:
-                    return status, last_ride_index
+            target_time = ride_info[row + idx]['attributes'][stop_info.sort]
+            if target_time:
+                display_time = format_time(target_time)
+                last_ride_index = idx
             else:
-                return 'Arriving', last_ride_index
-        elif num_of_rides == 0:
-            return 'No data', last_ride_index
-        else:
-            return '', last_ride_index
+                break
+            if display_time < 0:
+                continue
+            else:
+                if display_time > 20:
+                    display_time = ceil(display_time / 60)
+                else:
+                    display_time = 0
+                break
 
-    def format_time(self, terminal_time):
-        """Converts the arrival/departure time from a timestamp
-        to seconds from arrival
-        """
-        if time:
-            formatted_time = datetime.fromisoformat(
-                    terminal_time.replace('T', ' ')[:-6]
-                    + '+00:00'
-            )
-            formatted_time -= (
-                    datetime.now(timezone.utc)
-                    - timedelta(hours=5, minutes=0)
-            )
-        return formatted_time.total_seconds()
+    # Time and offset data to pass off based on status of each ride
+    if display_time is not None:
+        if display_time > 0:
+            if not status:
+                minute = ' minute' if display_time == 1 else ' minutes'
+                return str(display_time) + minute, last_ride_index
+            else:
+                return status, last_ride_index
+        else:
+            return 'Arriving', last_ride_index
+    elif num_of_rides == 0:
+        return 'No data', last_ride_index
+    else:
+        return '', last_ride_index
+
+
+def format_time(terminal_time):
+    """Converts the arrival/departure time from a timestamp
+    to seconds from arrival
+    """
+    if time:
+        formatted_time = datetime.fromisoformat(
+                terminal_time.replace('T', ' ')[:-6]
+                + '+00:00'
+        )
+        formatted_time -= (
+                datetime.now(timezone.utc)
+                - timedelta(hours=5, minutes=0)
+        )
+    return formatted_time.total_seconds()
 
 
 def generate_stop() -> None:
@@ -312,7 +312,7 @@ def load_saved_rides() -> None:
     gui.refreshes_in.setText('Loading saved rides...')
     for _ in range(rides.qsize()):
         rides.get()
-    try:
+    if os.path.exists('favorites.asc'):
         with open('favorites.asc', 'r') as file_to_read:
             favorites = file_to_read.readlines()
         for label in range(len(favorites) - 1):
@@ -329,9 +329,6 @@ def load_saved_rides() -> None:
                         line[2],
                         line[3]
                 ))
-    # Stops users from breaking my program with invalid requests
-    except FileNotFoundError:
-        return
 
 
 if __name__ == '__main__':

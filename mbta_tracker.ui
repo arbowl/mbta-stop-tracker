@@ -83,21 +83,21 @@
     </property>
     <property name="font">
      <font>
-      <family>Unispace</family>
+      <family>Lucida Console</family>
       <pointsize>28</pointsize>
-      <weight>75</weight>
-      <bold>true</bold>
+      <weight>50</weight>
+      <bold>false</bold>
      </font>
     </property>
     <property name="layoutDirection">
      <enum>Qt::LeftToRight</enum>
     </property>
     <property name="styleSheet">
-     <string notr="true">#ride_1_box_1 {
+     <string notr="true">QPlainTextEdit {
 	background-color: black;
 	color: #FFC600;
 	border-radius: 2px;
-	padding-top: 6px;
+	padding-top: 10px;
 	padding-left: 15px;
 }</string>
     </property>
@@ -137,17 +137,23 @@
     </property>
     <property name="font">
      <font>
-      <family>Unispace</family>
+      <family>Lucida Console</family>
       <pointsize>28</pointsize>
-      <weight>75</weight>
-      <bold>true</bold>
+      <weight>50</weight>
+      <bold>false</bold>
      </font>
     </property>
     <property name="layoutDirection">
      <enum>Qt::LeftToRight</enum>
     </property>
     <property name="styleSheet">
-     <string notr="true">background-color: black; color: #FFC600; border-radius: 2px; padding-top: 6px; padding-left: 15px;</string>
+     <string notr="true">QPlainTextEdit {
+	background-color: black;
+	color: #FFC600;
+	border-radius: 2px;
+	padding-top: 10px;
+	padding-left: 15px;
+}</string>
     </property>
     <property name="frameShape">
      <enum>QFrame::VLine</enum>
@@ -217,17 +223,23 @@
     </property>
     <property name="font">
      <font>
-      <family>Unispace</family>
+      <family>Lucida Console</family>
       <pointsize>28</pointsize>
-      <weight>75</weight>
-      <bold>true</bold>
+      <weight>50</weight>
+      <bold>false</bold>
      </font>
     </property>
     <property name="layoutDirection">
      <enum>Qt::LeftToRight</enum>
     </property>
     <property name="styleSheet">
-     <string notr="true">background-color: black; color: #FFC600; border-radius: 2px; padding-top: 6px; padding-left: 15px;</string>
+     <string notr="true">QPlainTextEdit {
+	background-color: black;
+	color: #FFC600;
+	border-radius: 2px;
+	padding-top: 10px;
+	padding-left: 15px;
+}</string>
     </property>
     <property name="frameShape">
      <enum>QFrame::VLine</enum>
@@ -262,17 +274,23 @@
     </property>
     <property name="font">
      <font>
-      <family>Unispace</family>
+      <family>Lucida Console</family>
       <pointsize>28</pointsize>
-      <weight>75</weight>
-      <bold>true</bold>
+      <weight>50</weight>
+      <bold>false</bold>
      </font>
     </property>
     <property name="layoutDirection">
      <enum>Qt::LeftToRight</enum>
     </property>
     <property name="styleSheet">
-     <string notr="true">background-color: black; color: #FFC600; border-radius: 2px; padding-top: 6px; padding-left: 15px;</string>
+     <string notr="true">QPlainTextEdit {
+	background-color: black;
+	color: #FFC600;
+	border-radius: 2px;
+	padding-top: 10px;
+	padding-left: 15px;
+}</string>
     </property>
     <property name="frameShape">
      <enum>QFrame::VLine</enum>
@@ -342,17 +360,23 @@
     </property>
     <property name="font">
      <font>
-      <family>Unispace</family>
+      <family>Lucida Console</family>
       <pointsize>28</pointsize>
-      <weight>75</weight>
-      <bold>true</bold>
+      <weight>50</weight>
+      <bold>false</bold>
      </font>
     </property>
     <property name="layoutDirection">
      <enum>Qt::LeftToRight</enum>
     </property>
     <property name="styleSheet">
-     <string notr="true">background-color: black; color: #FFC600; border-radius: 2px; padding-top: 6px; padding-left: 15px;</string>
+     <string notr="true">QPlainTextEdit {
+	background-color: black;
+	color: #FFC600;
+	border-radius: 2px;
+	padding-top: 10px;
+	padding-left: 15px;
+}</string>
     </property>
     <property name="frameShape">
      <enum>QFrame::VLine</enum>
@@ -387,17 +411,23 @@
     </property>
     <property name="font">
      <font>
-      <family>Unispace</family>
+      <family>Lucida Console</family>
       <pointsize>28</pointsize>
-      <weight>75</weight>
-      <bold>true</bold>
+      <weight>50</weight>
+      <bold>false</bold>
      </font>
     </property>
     <property name="layoutDirection">
      <enum>Qt::LeftToRight</enum>
     </property>
     <property name="styleSheet">
-     <string notr="true">background-color: black; color: #FFC600; border-radius: 2px; padding-top: 6px; padding-left: 15px;</string>
+     <string notr="true">QPlainTextEdit {
+	background-color: black;
+	color: #FFC600;
+	border-radius: 2px;
+	padding-top: 10px;
+	padding-left: 15px;
+}</string>
     </property>
     <property name="frameShape">
      <enum>QFrame::VLine</enum>

@@ -48,17 +48,17 @@ class Ui_mbta_tracker_window(object):
         self.ride_1_box_1 = QtWidgets.QPlainTextEdit(self.ride_1)
         self.ride_1_box_1.setGeometry(QtCore.QRect(20, 30, 341, 61))
         font = QtGui.QFont()
-        font.setFamily("Unispace")
+        font.setFamily("Lucida Console")
         font.setPointSize(28)
-        font.setBold(True)
-        font.setWeight(75)
+        font.setBold(False)
+        font.setWeight(50)
         self.ride_1_box_1.setFont(font)
         self.ride_1_box_1.setLayoutDirection(QtCore.Qt.LayoutDirection.LeftToRight)
-        self.ride_1_box_1.setStyleSheet("#ride_1_box_1 {\n"
+        self.ride_1_box_1.setStyleSheet("QPlainTextEdit {\n"
 "    background-color: black;\n"
 "    color: #FFC600;\n"
 "    border-radius: 2px;\n"
-"    padding-top: 6px;\n"
+"    padding-top: 10px;\n"
 "    padding-left: 15px;\n"
 "}")
         self.ride_1_box_1.setFrameShape(QtWidgets.QFrame.Shape.VLine)
@@ -73,13 +73,19 @@ class Ui_mbta_tracker_window(object):
         self.ride_1_box_2 = QtWidgets.QPlainTextEdit(self.ride_1)
         self.ride_1_box_2.setGeometry(QtCore.QRect(20, 100, 341, 61))
         font = QtGui.QFont()
-        font.setFamily("Unispace")
+        font.setFamily("Lucida Console")
         font.setPointSize(28)
-        font.setBold(True)
-        font.setWeight(75)
+        font.setBold(False)
+        font.setWeight(50)
         self.ride_1_box_2.setFont(font)
         self.ride_1_box_2.setLayoutDirection(QtCore.Qt.LayoutDirection.LeftToRight)
-        self.ride_1_box_2.setStyleSheet("background-color: black; color: #FFC600; border-radius: 2px; padding-top: 6px; padding-left: 15px;")
+        self.ride_1_box_2.setStyleSheet("QPlainTextEdit {\n"
+"    background-color: black;\n"
+"    color: #FFC600;\n"
+"    border-radius: 2px;\n"
+"    padding-top: 10px;\n"
+"    padding-left: 15px;\n"
+"}")
         self.ride_1_box_2.setFrameShape(QtWidgets.QFrame.Shape.VLine)
         self.ride_1_box_2.setFrameShadow(QtWidgets.QFrame.Shadow.Raised)
         self.ride_1_box_2.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
@@ -112,13 +118,19 @@ class Ui_mbta_tracker_window(object):
         self.ride_2_box_2 = QtWidgets.QPlainTextEdit(self.ride_2)
         self.ride_2_box_2.setGeometry(QtCore.QRect(20, 100, 341, 61))
         font = QtGui.QFont()
-        font.setFamily("Unispace")
+        font.setFamily("Lucida Console")
         font.setPointSize(28)
-        font.setBold(True)
-        font.setWeight(75)
+        font.setBold(False)
+        font.setWeight(50)
         self.ride_2_box_2.setFont(font)
         self.ride_2_box_2.setLayoutDirection(QtCore.Qt.LayoutDirection.LeftToRight)
-        self.ride_2_box_2.setStyleSheet("background-color: black; color: #FFC600; border-radius: 2px; padding-top: 6px; padding-left: 15px;")
+        self.ride_2_box_2.setStyleSheet("QPlainTextEdit {\n"
+"    background-color: black;\n"
+"    color: #FFC600;\n"
+"    border-radius: 2px;\n"
+"    padding-top: 10px;\n"
+"    padding-left: 15px;\n"
+"}")
         self.ride_2_box_2.setFrameShape(QtWidgets.QFrame.Shape.VLine)
         self.ride_2_box_2.setFrameShadow(QtWidgets.QFrame.Shadow.Raised)
         self.ride_2_box_2.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
@@ -130,13 +142,19 @@ class Ui_mbta_tracker_window(object):
         self.ride_2_box_1 = QtWidgets.QPlainTextEdit(self.ride_2)
         self.ride_2_box_1.setGeometry(QtCore.QRect(20, 30, 341, 61))
         font = QtGui.QFont()
-        font.setFamily("Unispace")
+        font.setFamily("Lucida Console")
         font.setPointSize(28)
-        font.setBold(True)
-        font.setWeight(75)
+        font.setBold(False)
+        font.setWeight(50)
         self.ride_2_box_1.setFont(font)
         self.ride_2_box_1.setLayoutDirection(QtCore.Qt.LayoutDirection.LeftToRight)
-        self.ride_2_box_1.setStyleSheet("background-color: black; color: #FFC600; border-radius: 2px; padding-top: 6px; padding-left: 15px;")
+        self.ride_2_box_1.setStyleSheet("QPlainTextEdit {\n"
+"    background-color: black;\n"
+"    color: #FFC600;\n"
+"    border-radius: 2px;\n"
+"    padding-top: 10px;\n"
+"    padding-left: 15px;\n"
+"}")
         self.ride_2_box_1.setFrameShape(QtWidgets.QFrame.Shape.VLine)
         self.ride_2_box_1.setFrameShadow(QtWidgets.QFrame.Shadow.Raised)
         self.ride_2_box_1.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
@@ -169,13 +187,19 @@ class Ui_mbta_tracker_window(object):
         self.ride_3_box_2 = QtWidgets.QPlainTextEdit(self.ride_3)
         self.ride_3_box_2.setGeometry(QtCore.QRect(20, 100, 341, 61))
         font = QtGui.QFont()
-        font.setFamily("Unispace")
+        font.setFamily("Lucida Console")
         font.setPointSize(28)
-        font.setBold(True)
-        font.setWeight(75)
+        font.setBold(False)
+        font.setWeight(50)
         self.ride_3_box_2.setFont(font)
         self.ride_3_box_2.setLayoutDirection(QtCore.Qt.LayoutDirection.LeftToRight)
-        self.ride_3_box_2.setStyleSheet("background-color: black; color: #FFC600; border-radius: 2px; padding-top: 6px; padding-left: 15px;")
+        self.ride_3_box_2.setStyleSheet("QPlainTextEdit {\n"
+"    background-color: black;\n"
+"    color: #FFC600;\n"
+"    border-radius: 2px;\n"
+"    padding-top: 10px;\n"
+"    padding-left: 15px;\n"
+"}")
         self.ride_3_box_2.setFrameShape(QtWidgets.QFrame.Shape.VLine)
         self.ride_3_box_2.setFrameShadow(QtWidgets.QFrame.Shadow.Raised)
         self.ride_3_box_2.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
@@ -187,13 +211,19 @@ class Ui_mbta_tracker_window(object):
         self.ride_3_box_1 = QtWidgets.QPlainTextEdit(self.ride_3)
         self.ride_3_box_1.setGeometry(QtCore.QRect(20, 30, 341, 61))
         font = QtGui.QFont()
-        font.setFamily("Unispace")
+        font.setFamily("Lucida Console")
         font.setPointSize(28)
-        font.setBold(True)
-        font.setWeight(75)
+        font.setBold(False)
+        font.setWeight(50)
         self.ride_3_box_1.setFont(font)
         self.ride_3_box_1.setLayoutDirection(QtCore.Qt.LayoutDirection.LeftToRight)
-        self.ride_3_box_1.setStyleSheet("background-color: black; color: #FFC600; border-radius: 2px; padding-top: 6px; padding-left: 15px;")
+        self.ride_3_box_1.setStyleSheet("QPlainTextEdit {\n"
+"    background-color: black;\n"
+"    color: #FFC600;\n"
+"    border-radius: 2px;\n"
+"    padding-top: 10px;\n"
+"    padding-left: 15px;\n"
+"}")
         self.ride_3_box_1.setFrameShape(QtWidgets.QFrame.Shape.VLine)
         self.ride_3_box_1.setFrameShadow(QtWidgets.QFrame.Shadow.Raised)
         self.ride_3_box_1.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
