@@ -138,7 +138,7 @@ class RideTracker(QObject):
                 # For each of the two boxes per stop
                 offset = 0
                 for row in range(2):
-                    time_to_arrive, offset = self.calculate_stop_times(
+                    time_to_arrive, offset = calculate_stop_times(
                             row,
                             mbta_info,
                             mbta_object,
