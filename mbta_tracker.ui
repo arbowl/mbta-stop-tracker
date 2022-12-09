@@ -921,31 +921,6 @@ QScrollBar::track {
      <string>Method</string>
     </property>
    </widget>
-   <widget class="QLabel" name="label">
-    <property name="geometry">
-     <rect>
-      <x>880</x>
-      <y>110</y>
-      <width>261</width>
-      <height>31</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <family>Source Serif Pro Black</family>
-      <pointsize>8</pointsize>
-      <weight>75</weight>
-      <italic>true</italic>
-      <bold>true</bold>
-     </font>
-    </property>
-    <property name="styleSheet">
-     <string notr="true">color: #DFDFDF</string>
-    </property>
-    <property name="text">
-     <string>For stops at the start of a route, use &quot;Schedules&quot;</string>
-    </property>
-   </widget>
    <zorder>route_label</zorder>
    <zorder>stop_label</zorder>
    <zorder>direction_label</zorder>
@@ -955,7 +930,6 @@ QScrollBar::track {
    <zorder>display_button</zorder>
    <zorder>favorites_button</zorder>
    <zorder>stop_box</zorder>
-   <zorder>label</zorder>
    <zorder>restore_button</zorder>
    <zorder>method_box</zorder>
   </widget>

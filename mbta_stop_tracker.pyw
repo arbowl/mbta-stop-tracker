@@ -267,6 +267,16 @@ def populate_stops() -> None:
         conversion_dict[stop_name] = stop_id
     gui.stop_box.clear()
     gui.stop_box.addItems(list_of_stops)
+
+
+def populate_methods() -> None:
+    gui.method_box.clear()
+    stop = gui.stop_box.currentIndex()
+    total_stops = gui.stop_box.count() - 1
+    if stop == 0 or stop == total_stops:
+        gui.method_box.addItems(['Schedules'])
+    else:
+        gui.method_box.addItems(['Predictions', 'Schedules'])
     
 
 def save_current_ride() -> None:
@@ -338,7 +348,8 @@ if __name__ == '__main__':
     populate_stops()
     gui.route_box.currentTextChanged.connect(populate_stops)
     gui.direction_box.addItems(['Inbound', 'Outbound'])
-    gui.method_box.addItems(['Predictions', 'Schedules'])
+    populate_methods()
+    gui.stop_box.currentTextChanged.connect(populate_methods)
     
     # Initializes the buttons
     gui.display_button.clicked.connect(generate_stop)
