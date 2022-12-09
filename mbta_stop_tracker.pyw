@@ -125,95 +125,28 @@ class RideTracker(QObject):
     
     @pyqtSlot()
     def run(self) -> None:
-        """The main logical loop of the program. Each refresh cycle, it iterates
-        through the queue and downloads the data associated with each MBTA object
-        and the URL associated with it. Different exceptions indicate different
-        errors with the URL requested.
+        """Manages the queue, MBTA stop objects, and signals to the GUI.
+        Refresh rate is based on the presence of the API key.
         """
         while True:
             self.updating_sig.emit('Refreshes in:')
-            for station in range(rides.qsize()):
-                # Sets up MBTA object parsing
-                mbta_object = rides.queue[rides.qsize() - 1 - station]
+            # For each stop (up to 3) in the queue
+            for stop in range(rides.qsize()):
+                mbta_object = rides.queue[rides.qsize() - 1 - stop]
                 ride_name = mbta_object.name
-                self.ride_labels[station].emit(ride_name)
+                self.ride_labels[stop].emit(ride_name)
                 api_url = mbta_object.generate_url()
-
-                # Gets data ready for processing
                 mbta_info = json.load(request.urlopen(api_url))['data']
-                num_of_rides = len(mbta_info)
-                previous_status = None
-                target_time = None
-                display_time = None
-                status = None
-                # Updates each box if there is data
-                for col in range(2):
-                    # Length is set by size of data available
-                    if num_of_rides >= col + 1:
-                        for idx in range(num_of_rides):
-                            # Checks stopped rides
-                            if 'status' in mbta_info[col]['attributes']:
-                                if mbta_info[col]['attributes']['status']:
-                                    status = mbta_info[col]['attributes']['status']
-
-                            # Skips rides that aren't stopping at this stop
-                            if 'schedule_relationship' in mbta_info[col + idx]['attributes']:
-                                if mbta_info[col + idx]['attributes']['schedule_relationship'] == 'SKIPPED':
-                                    continue
-                            
-                            # Checks to see if there is a next available time for that stop
-                            target_time = mbta_info[col + idx]['attributes'][mbta_object.sort]
-                            if target_time:
-                                formatted_time = datetime.fromisoformat(
-                                        target_time.replace('T', ' ')[:-6]
-                                        + '+00:00'
-                                )
-                            else:
-                                break
-
-                            # If a time is returned, convert it to minutes from now
-                            formatted_time -= (
-                                    datetime.now(timezone.utc)
-                                    - timedelta(hours=5, minutes=0)
-                            )
-                            display_time = floor(formatted_time.total_seconds() / 60)
-
-                            # If the converted time isn't current, skip to the next one
-                            if display_time < 0:
-                                continue
-                            else:
-                                break
-
-                    """Populates ride display boxes
-                    """
-                    # If there is a valid time...
-                    if display_time:
-                        # ...And it's greater than 0...
-                        if display_time > 0:
-                            # ...And it's not stopped...
-                            if not status and not previous_status:
-                                minute = ' minute' if display_time == 1 else ' minutes'
-                                self.box_signals[station * 2 + col].emit(
-                                        str(display_time)
-                                        + minute
-                                )
-                            # ...But it's stopped, display it
-                            else:
-                                self.box_signals[station * 2].emit('Stopped')
-                        # ...But it's <=0, the train is ambiguously arriving/departing
-                        else:
-                            self.box_signals[station * 2 + col].emit('Arriving')
-                    # If there isn't a valid time...
-                    else:
-                        # ...And not a single ride is scheduled,
-                        if num_of_rides == 0:
-                            self.box_signals[station * 2 + col].emit('No data')
-                        # ...But the line is active, stay blank for now
-                        else:
-                            self.box_signals[station * 2 + col].emit('')
-                    previous_status = status
-            
-            # Refresh rate based on presence of API key
+                offset = 0
+                # For each of the two boxes per stop
+                for row in range(2):
+                    time_to_arrive, offset = self.calculate_stop_times(
+                            row,
+                            mbta_info,
+                            mbta_object,
+                            offset
+                    )
+                    self.box_signals[stop * 2 + row].emit(time_to_arrive)
             if API:
                 lcd_value = 3
             else:
@@ -222,6 +155,67 @@ class RideTracker(QObject):
                 self.timer_update.emit(lcd_value)
                 lcd_value -= 1
                 time.sleep(1)
+    
+    def calculate_stop_times(self, row, ride_info, stop_info, offset) -> str:
+        """Handles everything related to finding the next availale ride info
+        based on whether it's the first or second ride available, whether
+        it's stopped or skipped, arriving, or already passed.
+        """
+        status = None
+        display_time = None
+        num_of_rides = len(ride_info)
+        last_ride_index = 0
+
+        # For all the rides available, try to find info for the next nearest
+        if num_of_rides >= row + 1:
+            for idx in range(num_of_rides):
+                if 'status' in ride_info[row]['attributes']:
+                    if ride_info[row]['attributes']['status']:
+                        status = ride_info[row]['attributes']['status']
+                if 'schedule_relationship' in ride_info[row]['attributes']:
+                    if ride_info[row]['attributes']['schedule_relationship'] == 'SKIPPED':
+                        continue
+                target_time = ride_info[row + idx + offset]['attributes'][stop_info.sort]
+                if target_time:
+                    display_time = self.format_time(target_time)
+                    last_ride_index = idx
+                else:
+                    break
+                if display_time < -10:
+                    continue
+                else:
+                    display_time = floor(display_time / 60)
+                    break
+
+        # Time and offset data to pass off based on status of each ride
+        if display_time:
+            if display_time > 0:
+                if not status:
+                    minute = ' minute' if display_time == 1 else ' minutes'
+                    return str(display_time) + minute, last_ride_index
+                else:
+                    return 'Stopped', last_ride_index
+            else:
+                return 'Arriving', last_ride_index
+        elif num_of_rides == 0:
+            return 'No data', last_ride_index
+        else:
+            return '', last_ride_index
+
+    def format_time(self, terminal_time):
+        """Converts the arrival/departure time from a timestamp
+        to seconds from arrival
+        """
+        if time:
+            formatted_time = datetime.fromisoformat(
+                    terminal_time.replace('T', ' ')[:-6]
+                    + '+00:00'
+            )
+            formatted_time -= (
+                    datetime.now(timezone.utc)
+                    - timedelta(hours=5, minutes=0)
+            )
+        return formatted_time.total_seconds()
 
 
 def generate_stop() -> None:
