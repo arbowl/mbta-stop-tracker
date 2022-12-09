@@ -270,10 +270,15 @@ def populate_stops() -> None:
 
 
 def populate_methods() -> None:
+    """A way to prevent users from selecting a "prediction" for a
+    terminus--terminuses only launch rides on a schedule and thus
+    don't have predictions.
+    """
     gui.method_box.clear()
     stop = gui.stop_box.currentIndex()
-    total_stops = gui.stop_box.count() - 1
-    if stop == 0 or stop == total_stops:
+    first_stop = 0
+    final_stop = gui.stop_box.count() - 1
+    if stop == first_stop or stop == final_stop:
         gui.method_box.addItems(['Schedules'])
     else:
         gui.method_box.addItems(['Predictions', 'Schedules'])
