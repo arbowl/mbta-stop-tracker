@@ -3,7 +3,7 @@ import json
 import os
 import time
 from datetime import datetime, timedelta, timezone
-from math import floor
+from math import floor, ceil
 from queue import Queue
 from urllib import request
 
@@ -168,39 +168,42 @@ class RideTracker(QObject):
 
         # For all the rides available, try to find info for the next nearest
         if num_of_rides >= row + 1:
-            for idx in range(num_of_rides):
+            for idx in range(offset, num_of_rides):
                 if 'status' in ride_info[row]['attributes']:
                     if ride_info[row]['attributes']['status']:
                         status = ride_info[row]['attributes']['status']
                 if 'schedule_relationship' in ride_info[row]['attributes']:
                     if ride_info[row]['attributes']['schedule_relationship'] == 'SKIPPED':
                         continue
-                target_time = ride_info[row + idx + offset]['attributes'][stop_info.sort]
+                target_time = ride_info[row + idx]['attributes'][stop_info.sort]
                 if target_time:
                     display_time = self.format_time(target_time)
                     last_ride_index = idx
                 else:
                     break
-                if display_time < -10:
+                if display_time < 0:
                     continue
                 else:
-                    display_time = floor(display_time / 60)
+                    if display_time > 20:
+                        display_time = ceil(display_time / 60)
+                    else:
+                        display_time = 0
                     break
 
         # Time and offset data to pass off based on status of each ride
-        if display_time:
+        if display_time is not None:
             if display_time > 0:
                 if not status:
                     minute = ' minute' if display_time == 1 else ' minutes'
                     return str(display_time) + minute, last_ride_index
                 else:
-                    return 'Stopped', last_ride_index
+                    return status, last_ride_index
             else:
                 return 'Arriving', last_ride_index
         elif num_of_rides == 0:
             return 'No data', last_ride_index
         else:
-            return '', last_ride_index
+            return '*', last_ride_index
 
     def format_time(self, terminal_time):
         """Converts the arrival/departure time from a timestamp
