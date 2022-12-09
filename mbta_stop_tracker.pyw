@@ -203,7 +203,7 @@ class RideTracker(QObject):
         elif num_of_rides == 0:
             return 'No data', last_ride_index
         else:
-            return '*', last_ride_index
+            return '', last_ride_index
 
     def format_time(self, terminal_time):
         """Converts the arrival/departure time from a timestamp
