@@ -5,6 +5,7 @@ import time
 from datetime import datetime, timedelta, timezone
 from math import ceil
 from queue import Queue
+from typing import Union
 from urllib import request
 
 from PyQt6.QtCore import QObject, QThread, pyqtSignal, pyqtSlot
@@ -155,7 +156,7 @@ class RideTracker(QObject):
                 time.sleep(1)
 
 
-def calculate_stop_times(row, ride_info, stop_info, offset) -> str:
+def calculate_stop_times(row, ride_info, stop_info, offset) -> Union[str, int]:
     """Handles everything related to finding the next availale ride info
     based on whether it's the first or second ride available, whether
     it's stopped or skipped, arriving, or already passed.
@@ -166,7 +167,7 @@ def calculate_stop_times(row, ride_info, stop_info, offset) -> str:
     last_ride_index = 0
 
     # For all the rides available, try to find info for the next nearest
-    if num_of_rides >= row + 1:
+    if num_of_rides >= row + offset + 1:
         for idx in range(offset, num_of_rides):
             if 'status' in ride_info[row]['attributes']:
                 if ride_info[row]['attributes']['status']:
@@ -200,7 +201,7 @@ def calculate_stop_times(row, ride_info, stop_info, offset) -> str:
         else:
             return 'Arriving', last_ride_index
     elif num_of_rides == 0:
-        return 'No data', last_ride_index
+        return 'No stops', last_ride_index
     else:
         return '', last_ride_index
 
