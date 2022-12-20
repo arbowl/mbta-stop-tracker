@@ -169,18 +169,22 @@ def calculate_stop_times(row, ride_info, stop_info, offset) -> Union[str, int]:
     # For all the rides available, try to find info for the next nearest
     if num_of_rides >= row + offset + 1:
         for idx in range(offset, num_of_rides):
-            if 'status' in ride_info[row]['attributes']:
-                if ride_info[row]['attributes']['status']:
-                    status = ride_info[row]['attributes']['status']
-            if 'schedule_relationship' in ride_info[row]['attributes']:
-                if ride_info[row]['attributes']['schedule_relationship'] == 'SKIPPED':
+            if 'status' in ride_info[row + idx]['attributes']:
+                if ride_info[row + idx]['attributes']['status']:
+                    status = ' '.join(ride_info[row + idx]['attributes']['status'].split(' ')[1:])
+
+            if 'schedule_relationship' in ride_info[row + idx]['attributes']:
+                if ride_info[row + idx]['attributes']['schedule_relationship'] == 'SKIPPED':
                     continue
+
             target_time = ride_info[row + idx]['attributes'][stop_info.sort]
+
             if target_time:
                 display_time = format_time(target_time)
                 last_ride_index = idx
             else:
                 break
+
             if display_time < 0:
                 continue
             else:
