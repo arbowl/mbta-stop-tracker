@@ -175,15 +175,12 @@ def calculate_stop_times(row, ride_info, stop_info, offset) -> Union[str, int]:
             if 'schedule_relationship' in ride_info[row + idx]['attributes']:
                 if ride_info[row + idx]['attributes']['schedule_relationship'] == 'SKIPPED':
                     continue
-
             target_time = ride_info[row + idx]['attributes'][stop_info.sort]
-
             if target_time:
                 display_time = format_time(target_time)
                 last_ride_index = idx
             else:
                 break
-
             if display_time < 0:
                 continue
             else:
