@@ -165,7 +165,6 @@ def calculate_stop_times(row, ride_info, stop_info, offset) -> Union[str, int]:
     display_time = None
     num_of_rides = len(ride_info)
     last_ride_index = 0
-
     # For all the rides available, try to find info for the next nearest
     if num_of_rides >= row + offset + 1:
         for idx in range(offset, num_of_rides):
@@ -215,13 +214,14 @@ def format_time(terminal_time):
     to seconds from arrival
     """
     if time:
+        time_offset = int(terminal_time[-4])
         formatted_time = datetime.fromisoformat(
                 terminal_time.replace('T', ' ')[:-6]
                 + '+00:00'
         )
         formatted_time -= (
                 datetime.now(timezone.utc)
-                - timedelta(hours=5, minutes=0)
+                - timedelta(hours=time_offset, minutes=0)
         )
     return formatted_time.total_seconds()
 
