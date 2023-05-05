@@ -1,12 +1,13 @@
 import json
 import os
-from time import sleep
+from configparser import ConfigParser
 from datetime import datetime, timedelta, timezone
 from math import ceil
 from queue import Queue
+from time import sleep
 from typing import Union
 from urllib import request
-from configparser import ConfigParser
+from urllib.error import URLError
 
 from PyQt6.QtCore import QObject, QThread, pyqtSignal, pyqtSlot
 from PyQt6.QtGui import QIcon
@@ -60,7 +61,6 @@ class RideTracker(QObject):
     ride_3_label = pyqtSignal(str)
     
     def __init__(self) -> None:
-        # Establishes the QObject and connects signals
         super().__init__()
         self.timer_update.connect(gui.refresh_lcd.display)
         self.updating_sig.connect(gui.refreshes_in.setText)
@@ -73,13 +73,12 @@ class RideTracker(QObject):
         self.ride_1_label.connect(gui.ride_1.setTitle)
         self.ride_2_label.connect(gui.ride_2.setTitle)
         self.ride_3_label.connect(gui.ride_3.setTitle)
-        # The order of GUI elements to iterate through
         self.ride_labels = [
                 self.ride_1_label, 
                 self.ride_2_label,
                 self.ride_3_label
         ]
-        self.box_signals = [
+        self.ride_boxes = [
                 self.ride_1_sig_1,
                 self.ride_1_sig_2,
                 self.ride_2_sig_1,
@@ -95,86 +94,67 @@ class RideTracker(QObject):
         """
         while True:
             self.updating_sig.emit('Refreshes in:')
-            # For each stop (up to 3) in the queue
             for stop in range(rides.qsize()):
-                mbta_object: MBTAStop = rides.queue[rides.qsize() - 1 - stop]
-                self.ride_labels[stop].emit(mbta_object.name)
-                api_url = mbta_object.generate_url
-                mbta_info = json.load(request.urlopen(api_url))['data']
-                # For each of the two boxes per stop
-                offset = 0
-                for row in range(2):
-                    time_to_arrive, offset = calculate_stop_times(
-                            row,
-                            mbta_info,
-                            mbta_object,
-                            offset
+                mbta_stop: MBTAStop = rides.queue[rides.qsize() - stop - 1]
+                self.ride_labels[stop].emit(mbta_stop.name)
+                try:
+                    api_url = mbta_stop.generate_url
+                except URLError:
+                    sleep(1)
+                    continue
+                api_list_of_rides = json.load(request.urlopen(api_url))['data']
+                current_api_list_index = 0
+                for row_of_gui in range(2):
+                    time_until_arrival, current_api_list_index = calculate_stop_times(
+                            row_of_gui,
+                            api_list_of_rides,
+                            mbta_stop,
+                            current_api_list_index
                     )
-                    self.box_signals[stop * 2 + row].emit(time_to_arrive)
-            if API_KEY:
-                lcd_value = 3
-            else:
-                lcd_value = 15
-            while lcd_value > -1:
-                self.timer_update.emit(lcd_value)
-                lcd_value -= 1
+                    self.ride_boxes[stop * 2 + row_of_gui].emit(time_until_arrival)
+            lcd_value = 3 if API_KEY else 15
+            for decrement in range(lcd_value + 1):
+                self.timer_update.emit(lcd_value - decrement)
                 sleep(1)
 
 
-def calculate_stop_times(row: int, ride_info: dict, stop_info: MBTAStop, offset: int) -> Union[str, int]:
+def calculate_stop_times(gui_row: int, list_of_rides: dict, stop_info: MBTAStop, prev_index: int) -> Union[str, int]:
     """Handles everything related to finding the next availale ride info based on whether it's the first
     or second ride available, whether it's stopped or skipped, arriving, or already passed.
     """
-    status = None
-    display_time = None
-    num_of_rides = len(ride_info)
-    last_ride_index = 0
-    # For all the rides available, try to find info for the next nearest
-    if num_of_rides >= row + offset + 1:
-        for idx in range(offset, num_of_rides):
-            alert = ride_info[row + idx]['attributes']
-            if 'status' in alert and alert['status']:
-                status = ' '.join(alert['status'].split(' ')[1:])
-            if 'schedule_relationship' in alert and alert['schedule_relationship'] == 'SKIPPED':
-                continue
-            target_time = alert[stop_info.sort]
-            if not target_time:
-                break
-            display_time = format_time(target_time)
-            last_ride_index = idx
-            if display_time < 0:
-                continue
-            if display_time > 20:
-                display_time = ceil(display_time / 60)
-                break
-            display_time = 0
+    current_index = 0
+    total_number_of_rides = len(list_of_rides)
+    if total_number_of_rides == 0:
+        return 'No stops', current_index
+    if 0 < total_number_of_rides < gui_row + prev_index + 1:
+        return '', current_index
+    for current_index in range(prev_index, total_number_of_rides):
+        alert = list_of_rides[gui_row + current_index]['attributes']
+        if 'status' in alert and alert['status']:
+            return ' '.join(alert['status'].split(' ')[1:])
+        if 'schedule_relationship' in alert and alert['schedule_relationship'] == 'SKIPPED':
+            continue
+        target_time = alert[stop_info.sort]
+        if not target_time:
             break
-    # Time and offset data to pass off based on status of each ride
-    if display_time is not None:
-        if display_time <= 0:
-            return 'Arriving', last_ride_index
-        if not status:
-            minute_s = ' minute' if display_time == 1 else ' minutes'
-            return str(display_time) + minute_s, last_ride_index
-        return status, last_ride_index
-    elif num_of_rides == 0:
-        return 'No stops', last_ride_index
-    return '', last_ride_index
+        display_time_in_seconds = format_time(target_time)
+        if display_time_in_seconds < 0:
+            continue
+        if display_time_in_seconds > 30:
+            display_time_in_minutes = ceil(display_time_in_seconds / 60)
+            plural = '' if display_time_in_minutes == 1 else 's'
+            return str(display_time_in_minutes) + f' minute{plural}', current_index
+        return 'Arriving', current_index
 
 
 def format_time(terminal_time: str) -> float:
     """Converts the arrival/departure time from a timestamp to seconds from arrival
     """
-    if terminal_time:
-        time_offset = int(terminal_time[-4])
-        formatted_time = datetime.fromisoformat(
-                terminal_time.replace('T', ' ')[:-6]
-                + '+00:00'
-        )
-        formatted_time -= (
-                datetime.now(timezone.utc)
-                - timedelta(hours=time_offset, minutes=0)
-        )
+    if not terminal_time:
+        return 0
+    time_offset = int(terminal_time[-4])
+    formatted_time = datetime.fromisoformat(terminal_time.replace('T', ' ')[:-6] + '+00:00')
+    formatted_time -= (datetime.now(timezone.utc) - timedelta(hours=time_offset, minutes=0))
     return formatted_time.total_seconds()
 
 
@@ -186,7 +166,6 @@ def generate_stop() -> None:
             gui.ride_2,
             gui.ride_3
     ]
-    # Let the user know their updates are loading
     if gui.refreshes_in.text() == 'Refreshes in:':
         gui.refreshes_in.setText('Adding stop in:')
     else:
@@ -199,7 +178,6 @@ def generate_stop() -> None:
             gui.direction_box.currentText(),
             gui.method_box.currentText(),
     ))
-    # Update the boxes that will load new stations
     for label in ride_boxes:
         if label.title() != 'Loading...':
             label.setTitle('Loading...')
@@ -231,10 +209,9 @@ def populate_methods() -> None:
     stop = gui.stop_box.currentIndex()
     first_stop = 0
     final_stop = gui.stop_box.count() - 1
-    if stop == first_stop or stop == final_stop:
-        gui.method_box.addItems(['Schedules'])
-    else:
-        gui.method_box.addItems(['Predictions', 'Schedules'])
+    if stop != first_stop and stop != final_stop:
+        gui.method_box.addItem('Predictions')
+    gui.method_box.addItem('Schedules')
     
 
 def save_current_ride() -> None:
@@ -254,6 +231,7 @@ def save_current_ride() -> None:
         config['Saved'][f'Ride{idx + 1}'] = str(item)
     with open('favorites.ini', 'w') as new_config_settings:
         config.write(new_config_settings)
+
 
 def load_saved_rides() -> None:
     """Loads rides from a text file and parses the existing dictionary
@@ -278,10 +256,10 @@ def load_saved_rides() -> None:
         name_code_pairs = stripped_line.split(', ')
         for pair in name_code_pairs:
             raw_key = pair.split(': ')[0]
-            dequoted_key = raw_key[1:-1]
+            stripped_key = raw_key[1:-1]
             raw_value = pair.split(': ')[1]
-            dequoted_value = raw_value[1:-1]
-            loaded_dict[dequoted_key] = dequoted_value
+            stripped_value = raw_value[1:-1]
+            loaded_dict[stripped_key] = stripped_value
         conversion_dict.update(loaded_dict)
     if not 'Saved' in config:
         return
