@@ -1,11 +1,12 @@
 import json
 import os
-import time
+from time import sleep
 from datetime import datetime, timedelta, timezone
 from math import ceil
 from queue import Queue
 from typing import Union
 from urllib import request
+from configparser import ConfigParser
 
 from PyQt6.QtCore import QObject, QThread, pyqtSignal, pyqtSlot
 from PyQt6.QtGui import QIcon
@@ -117,7 +118,7 @@ class RideTracker(QObject):
             while lcd_value > -1:
                 self.timer_update.emit(lcd_value)
                 lcd_value -= 1
-                time.sleep(1)
+                sleep(1)
 
 
 def calculate_stop_times(row: int, ride_info: dict, stop_info: MBTAStop, offset: int) -> Union[str, int]:
@@ -164,7 +165,7 @@ def calculate_stop_times(row: int, ride_info: dict, stop_info: MBTAStop, offset:
 def format_time(terminal_time: str) -> float:
     """Converts the arrival/departure time from a timestamp to seconds from arrival
     """
-    if time:
+    if terminal_time:
         time_offset = int(terminal_time[-4])
         formatted_time = datetime.fromisoformat(
                 terminal_time.replace('T', ' ')[:-6]
@@ -247,15 +248,18 @@ def save_current_ride() -> None:
                 rides.queue[item].direction,
                 rides.queue[item].method
         ])
-    with open('favorites.asc', 'w') as file_to_save:
-        file_to_save.write(str(conversion_dict) + '\n')
-        for item in save_list:
-            file_to_save.write(str(item) + '\n')
-
+    config['Reload'] = {'Conversions': str(conversion_dict)}
+    config['Saved'] = {}
+    for idx, item in enumerate(save_list):
+        config['Saved'][f'Ride{idx + 1}'] = str(item)
+    with open('favorites.ini', 'w') as new_config_settings:
+        config.write(new_config_settings)
 
 def load_saved_rides() -> None:
     """Loads rides from a text file and parses the existing dictionary
     """
+    if not os.path.exists('favorites.ini'):
+        return
     ride_boxes = [
             gui.ride_1,
             gui.ride_2,
@@ -264,37 +268,37 @@ def load_saved_rides() -> None:
     gui.refreshes_in.setText('Loading saved rides...')
     for _ in range(rides.qsize()):
         rides.get()
-    if not os.path.exists('favorites.asc'):
-        return
-    with open('favorites.asc', 'r') as file_to_read:
-        favorites = file_to_read.readlines()
-    for label in range(len(favorites) - 1):
+    favorites = config.read('favorites.ini')
+    for label in range(len(config['Saved'].keys())):
         ride_boxes[label].setTitle('Loading...')
     loaded_dict = {}
-    for idx, line in enumerate(favorites):
-        if '{' in line and '}' in line:
-            stripped_line = line.replace('{', '').replace('}', '').strip()
-            name_code_pairs = stripped_line.split(', ')
-            for pair in name_code_pairs:
-                raw_key = pair.split(': ')[0]
-                dequoted_key = raw_key[1:-1]
-                raw_value = pair.split(': ')[1]
-                dequoted_value = raw_value[1:-1]
-                loaded_dict[dequoted_key] = dequoted_value
-            conversion_dict.update(loaded_dict)
-            continue
-        stripped_line = line.replace('[', '').replace(']', '').strip()
-        mbta_stop_data = [data[1:-1] for data in stripped_line.split(', ')]
-        mbta_stop_data[2] = direction_dict[mbta_stop_data[2]]
-        if mbta_stop_data[1] not in conversion_dict.keys():
-            ride_boxes[idx - 1].setTitle(f'Ride {idx}')
-            continue
-        rides.put(MBTAStop(
-                mbta_stop_data[0],
-                mbta_stop_data[1],
-                mbta_stop_data[2],
-                mbta_stop_data[3]
-        ))
+    if 'Reload' in config:
+        reload_data = config['Reload']['conversions']
+        stripped_line = reload_data.replace('{', '').replace('}', '').strip()
+        name_code_pairs = stripped_line.split(', ')
+        for pair in name_code_pairs:
+            raw_key = pair.split(': ')[0]
+            dequoted_key = raw_key[1:-1]
+            raw_value = pair.split(': ')[1]
+            dequoted_value = raw_value[1:-1]
+            loaded_dict[dequoted_key] = dequoted_value
+        conversion_dict.update(loaded_dict)
+    if 'Saved' in config:
+        for ride in ['ride1', 'ride2', 'ride3']:
+            if config['Saved'][ride]:
+                stripped_line = config['Saved'][ride].replace('[', '').replace(']', '').strip()
+                mbta_stop_data = [data[1:-1] for data in stripped_line.split(', ')]
+                mbta_stop_data[2] = direction_dict[mbta_stop_data[2]]
+                idx = int(ride.replace('ride', ''))
+                if mbta_stop_data[1] not in conversion_dict.keys():
+                    ride_boxes[idx - 1].setTitle(f'Ride {idx}')
+                    continue
+                rides.put(MBTAStop(
+                        mbta_stop_data[0],
+                        mbta_stop_data[1],
+                        mbta_stop_data[2],
+                        mbta_stop_data[3]
+                ))
 
 
 def draw_gui_and_start_execution() -> None:
@@ -351,5 +355,6 @@ if __name__ == '__main__':
             pass
     for route in range(len(routes['data'])):
         total_routes.append(routes['data'][route]['id'])
+    config = ConfigParser()
     gui = Ui_mbta_tracker_window()
     draw_gui_and_start_execution()
