@@ -268,13 +268,13 @@ def load_saved_rides() -> None:
     gui.refreshes_in.setText('Loading saved rides...')
     for _ in range(rides.qsize()):
         rides.get()
-    favorites = config.read('favorites.ini')
+    config.read('favorites.ini')
     for label in range(len(config['Saved'].keys())):
         ride_boxes[label].setTitle('Loading...')
-    loaded_dict = {}
     if 'Reload' in config:
+        loaded_dict = {}
         reload_data = config['Reload']['conversions']
-        stripped_line = reload_data.replace('{', '').replace('}', '').strip()
+        stripped_line = reload_data.strip('[]\n')
         name_code_pairs = stripped_line.split(', ')
         for pair in name_code_pairs:
             raw_key = pair.split(': ')[0]
@@ -283,22 +283,24 @@ def load_saved_rides() -> None:
             dequoted_value = raw_value[1:-1]
             loaded_dict[dequoted_key] = dequoted_value
         conversion_dict.update(loaded_dict)
-    if 'Saved' in config:
-        for ride in ['ride1', 'ride2', 'ride3']:
-            if config['Saved'][ride]:
-                stripped_line = config['Saved'][ride].replace('[', '').replace(']', '').strip()
-                mbta_stop_data = [data[1:-1] for data in stripped_line.split(', ')]
-                mbta_stop_data[2] = direction_dict[mbta_stop_data[2]]
-                idx = int(ride.replace('ride', ''))
-                if mbta_stop_data[1] not in conversion_dict.keys():
-                    ride_boxes[idx - 1].setTitle(f'Ride {idx}')
-                    continue
-                rides.put(MBTAStop(
-                        mbta_stop_data[0],
-                        mbta_stop_data[1],
-                        mbta_stop_data[2],
-                        mbta_stop_data[3]
-                ))
+    if not 'Saved' in config:
+        return
+    for ride in ['ride1', 'ride2', 'ride3']:
+        if not ride in config['Saved']:
+            continue
+        stripped_line = config['Saved'][ride].strip('[]\n')
+        mbta_stop_data = [data[1:-1] for data in stripped_line.split(', ')]
+        mbta_stop_data[2] = direction_dict[mbta_stop_data[2]]
+        idx = int(ride.replace('ride', ''))
+        if mbta_stop_data[1] not in conversion_dict.keys():
+            ride_boxes[idx - 1].setTitle(f'Ride {idx}')
+            continue
+        rides.put(MBTAStop(
+                mbta_stop_data[0],
+                mbta_stop_data[1],
+                mbta_stop_data[2],
+                mbta_stop_data[3]
+        ))
 
 
 def draw_gui_and_start_execution() -> None:
